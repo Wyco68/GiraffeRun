@@ -1,5 +1,7 @@
 package isne12.gp9.runner;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -13,7 +15,7 @@ public class Player {
     // Player' properties
     private final Sprite sprite;
     private final Rectangle rectangle;
-    private final float speed = 4f;
+    private float speed = 4f;
     private int health;
     private int crystalCollected;
 
@@ -27,22 +29,37 @@ public class Player {
     // Animations
     private final Texture runRight;
     private final Texture runLeft;
+    private final Texture moveRight;
+    private final Texture moveLeft;
     private boolean running = true;
     private float animationTimer = 0f;
     private final float frameDuration = 0.15f;
+
+    // Sound Effects;
+    Sound hitSound;
+    Sound healSound;
+    Sound collectSound;
+    Sound teleportSound;
 
     // Constructor
     public Player(Texture texture, Main game) {
         this.game = game;
         this.sprite = new Sprite(texture);
         sprite.setSize(1, 1);
-        sprite.setX(game.viewport.getWorldWidth()/2);
+        sprite.setX(game.viewport.getWorldWidth() / 2);
 
         this.rectangle = new Rectangle(sprite.getX(), sprite.getY(), sprite.getWidth(), sprite.getHeight());
         this.health = 5;
 
         runRight = new Texture("rightMove.png");
         runLeft = new Texture("leftMove.png");
+        moveRight = new Texture("rightMoveShield.png");
+        moveLeft = new Texture("leftMoveShield.png");
+
+        hitSound = Gdx.audio.newSound(Gdx.files.internal("hitSound.mp3"));
+        healSound = Gdx.audio.newSound(Gdx.files.internal("healSound.mp3"));
+        collectSound = Gdx.audio.newSound(Gdx.files.internal("collectSound.mp3"));
+        teleportSound = Gdx.audio.newSound(Gdx.files.internal("teleportSound.mp3"));
     }
 
     // inputHandling from gameScreen
@@ -71,6 +88,8 @@ public class Player {
             shieldTimer = 3f;
             //reset the cooldown
             shieldCooldown = 8f;
+            // player's speed reduced by half while using shield
+            speed = 2f;
         }
     }
 
@@ -81,14 +100,19 @@ public class Player {
         if (animationTimer >= frameDuration) {
             animationTimer = 0;
             running = !running;
-            sprite.setTexture(running ? runLeft : runRight);
+            if (shieldActive)
+                sprite.setTexture(running ? moveLeft : moveRight);
+            else sprite.setTexture(running ? runLeft : runRight);
         }
         // shield
         if (shieldActive) {
             shieldTimer -= delta;
-            if (shieldTimer <= 0) shieldActive = false;
-            else if (shieldCooldown > 0) shieldCooldown -= delta;
+            if (shieldTimer <= 0) {
+                shieldActive = false;
+                speed = 4f;// restore original speed
+            }
         }
+        if (shieldCooldown > 0) shieldCooldown -= delta;
 
         // teleport
         if (teleportCooldown > 0) teleportCooldown -= delta;
@@ -96,6 +120,7 @@ public class Player {
         float playerWidth = sprite.getWidth();
         sprite.setX(MathUtils.clamp(sprite.getX(), 0, worldWidth - playerWidth));
         rectangle.set(sprite.getX(), sprite.getY(), sprite.getWidth(), sprite.getHeight());
+        teleportSound.play();
     }
 
     public void draw(SpriteBatch batch) {
@@ -117,16 +142,21 @@ public class Player {
     // get hit or not , depend on the shield
     public void getHit() {
         if (shieldActive) return;
+        hitSound.play();
         health--;
     }
 
     // heal if capture the heart
     public void heal() {
-        if (health < 5) health++;
+        if (health < 5) {
+            healSound.play();
+            health++;
+        }
     }
 
     // capture crystal for level up
     public void collectCrystal() {
+        collectSound.play();
         crystalCollected++;
     }
 
@@ -144,6 +174,14 @@ public class Player {
     public void dispose() {
         runRight.dispose();
         runLeft.dispose();
+        moveRight.dispose();
+        moveLeft.dispose();
+
+        hitSound.dispose();
+        healSound.dispose();
+        collectSound.dispose();
+        teleportSound.dispose();
+
     }
 
 }

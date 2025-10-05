@@ -18,7 +18,8 @@ public class GameScreen implements Screen {
     //Resources
     Texture backgroundTexture;
     Music themeAudio;
-    Sound hitSound;
+    Sound gameWinSound;
+    Sound gameOverSound;
 
     //Player
     Player player;
@@ -37,7 +38,10 @@ public class GameScreen implements Screen {
         this.game = game;
 
         //// Load Resources
-        backgroundTexture = new Texture("BG1.png");
+        backgroundTexture = new Texture("BG" + game.level + ".png");
+        themeAudio = Gdx.audio.newMusic(Gdx.files.internal("themeAudio.mp3"));
+        themeAudio.setLooping(true);
+        themeAudio.setVolume(0.3f);
 
         // Player
         player = new Player(new Texture("backView.png"), game);
@@ -52,7 +56,7 @@ public class GameScreen implements Screen {
 
     @Override
     public void show() {
-
+        themeAudio.play();
     }
 
     @Override
@@ -66,13 +70,17 @@ public class GameScreen implements Screen {
         float delta = Gdx.graphics.getDeltaTime();
 
         //Player's movement
-        //move right
-        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.E)) {
+        // move right
+        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D)) {
             player.moveRight(delta);
         }
-        //move left
-        else if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.W)) {
+        // move left
+        else if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.S)) {
             player.moveLeft(delta);
+        }
+        // use shield
+        else if (Gdx.input.isKeyJustPressed(Input.Keys.A)) {
+            player.activateShield();
         }
     }
 
@@ -104,17 +112,17 @@ public class GameScreen implements Screen {
         }
 
         // check conditions
-        if (player.getCrystalCollected()>=5) {
-            game.setScreen(new LoadScreen(game));
-            game.level++;
-            dispose();
-            // increase difficulty
+        if (player.getCrystalCollected() >= 5) {
+            if (game.level < 4) {
+                game.level++;
+                game.setScreen(new LoadScreen(game));
+            }
+            reset();
         }
         if (player.getHealth() <= 0) {
             game.setScreen(new GameOverScreen(game));
-            dispose();
+            reset();
         }
-
     }
 
 
@@ -127,7 +135,6 @@ public class GameScreen implements Screen {
         // difficulty increase by level
         float bulletProb = Math.min(0.5f + game.level * 0.05f, 0.9f); // will not be more than 0.9f
         float healthProb = Math.min(0.1f + game.level * 0.02f, 0.35f);
-        float crystalProb = 1f - bulletProb - healthProb;
 
         if (p < bulletProb) drop = new BulletDrop(bulletTexture, game);
         else if (p < bulletProb + healthProb) drop = new HealthDrop(healthTexture, game);
@@ -185,6 +192,12 @@ public class GameScreen implements Screen {
 
     }
 
+    public void reset() {
+        drops.clear();
+        player.reset();
+        dropTimer = 0;
+    }
+
     @Override
     public void dispose() {
         backgroundTexture.dispose();
@@ -192,5 +205,8 @@ public class GameScreen implements Screen {
         healthTexture.dispose();
         crystalTexture.dispose();
         player.dispose();
+        themeAudio.dispose();
+        gameWinSound.dispose();
+        gameOverSound.dispose();
     }
 }

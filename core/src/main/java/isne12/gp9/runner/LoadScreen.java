@@ -4,13 +4,16 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 public class LoadScreen implements Screen {
     final Main game;
+    Texture backGround;
 
     public LoadScreen(final Main game) {
         this.game = game;
+        backGround = new Texture("LoadScreen.png");
     }
 
     @Override
@@ -25,7 +28,7 @@ public class LoadScreen implements Screen {
         game.batch.setProjectionMatrix(game.viewport.getCamera().combined);
 
         game.batch.begin();
-
+        game.batch.draw(backGround, 0, 0, game.viewport.getWorldWidth(), game.viewport.getWorldHeight());
         game.font.draw(game.batch, "Alright, lets move on to next level!", 1, 1.5f);
 
         game.batch.end();
@@ -58,6 +61,6 @@ public class LoadScreen implements Screen {
 
     @Override
     public void dispose() {
-        // Destroy screen's assets here.
+        backGround.dispose();
     }
 }

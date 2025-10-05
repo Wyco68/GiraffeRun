@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 /**
@@ -11,9 +12,11 @@ import com.badlogic.gdx.utils.ScreenUtils;
  */
 public class FirstScreen implements Screen {
     final Main game;
+    Texture backGround;
 
     public FirstScreen(final Main game) {
         this.game = game;
+        backGround = new Texture("MenuScreen.png");
     }
 
     @Override
@@ -28,7 +31,7 @@ public class FirstScreen implements Screen {
         game.batch.setProjectionMatrix(game.viewport.getCamera().combined);
 
         game.batch.begin();
-
+        game.batch.draw(backGround, 0, 0, game.viewport.getWorldWidth(), game.viewport.getWorldHeight());
         game.font.draw(game.batch, "Welcome to GiraffeRun!", 1, 1.5f);
         game.font.draw(game.batch, "Tap AnyWhere or Space to Begin", 1, 1);
 
@@ -64,5 +67,6 @@ public class FirstScreen implements Screen {
     @Override
     public void dispose() {
         // Destroy screen's assets here.
+        backGround.dispose();
     }
 }
