@@ -1,40 +1,16 @@
 package isne12.gp9.runner;
 
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.badlogic.gdx.math.Rectangle;
 
-public class BulletDrop implements Drop {
-    private final Sprite sprite;
-    private final Rectangle rectangle;
+public class BulletDrop extends Drop {
 
-    public BulletDrop(Texture texture, float startX, float startY) {
-        sprite = new Sprite(texture);
-        sprite.setSize(1f, 1f);
-        sprite.setPosition(startX, startY);
-
-        rectangle = new Rectangle(sprite.getX(), sprite.getY(), sprite.getWidth(), sprite.getHeight());
-    }
-
-
-    @Override
-    public Sprite getSprite() {
-        return sprite;
+    public BulletDrop(Texture texture, Main game) {
+        super(texture, game);
+        this.speed = 4f + (game.level*1.5f);
     }
 
     @Override
-    public Rectangle getRectangle() {
-        return rectangle;
-    }
-
-    @Override
-    public void update(float delta) {
-        sprite.translateY(-10f * delta);
-        rectangle.set(sprite.getX(), sprite.getY(), sprite.getWidth(), sprite.getHeight());
-    }
-
-    @Override
-    public void onCatch(GameScreen screen) {
-        screen.runnerHealth--;
+    public void onCatch(Player player) {
+        player.getHit();
     }
 }

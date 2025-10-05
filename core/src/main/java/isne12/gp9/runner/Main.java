@@ -13,9 +13,12 @@ public class Main extends Game {
     public SpriteBatch batch;
     public BitmapFont font;
     public FitViewport viewport;
+    public int level;
 
     @Override
+
     public void create() {
+        level = 1;
         batch = new SpriteBatch();
         viewport = new FitViewport(8, 5);
 

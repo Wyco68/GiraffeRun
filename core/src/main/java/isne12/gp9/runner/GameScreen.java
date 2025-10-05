@@ -3,28 +3,26 @@ package isne12.gp9.runner;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 public class GameScreen implements Screen {
     // Variables
     final Main game;
-    int level = 1;
 
-    //BackGround
+    //Resources
     Texture backgroundTexture;
+    Music themeAudio;
+    Sound hitSound;
 
     //Player
-    Texture runnerTexture;
-    Sprite runnerSprite;
-    Rectangle runnerRectangle;
-    int runnerHealth = 5;
-    int crystalCollected = 0;
+    Player player;
+
 
     // Drops
     Texture bulletTexture;
@@ -39,14 +37,10 @@ public class GameScreen implements Screen {
         this.game = game;
 
         //// Load Resources
-        // BG
         backgroundTexture = new Texture("BG1.png");
 
         // Player
-        runnerTexture = new Texture("backView.png");
-        runnerSprite = new Sprite(runnerTexture);
-        runnerSprite.setSize(1, 1);
-        runnerRectangle = new Rectangle();
+        player = new Player(new Texture("backView.png"), game);
 
         // Drop
         bulletTexture = new Texture("rocket.png");
@@ -69,17 +63,16 @@ public class GameScreen implements Screen {
     }
 
     private void input() {
-        float speed = 4f;
         float delta = Gdx.graphics.getDeltaTime();
 
         //Player's movement
         //move right
-        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-            runnerSprite.translateX(speed * delta);
+        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.E)) {
+            player.moveRight(delta);
         }
         //move left
-        else if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-            runnerSprite.translateX(-speed * delta);
+        else if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.W)) {
+            player.moveLeft(delta);
         }
     }
 
@@ -87,21 +80,19 @@ public class GameScreen implements Screen {
         float worldWidth = game.viewport.getWorldWidth();
         float delta = Gdx.graphics.getDeltaTime();
 
-        //Player's HitBox
-        float runnerWidth = runnerSprite.getWidth();
-        float runnerHeight = runnerSprite.getHeight();
-        runnerSprite.setX(MathUtils.clamp(runnerSprite.getX(), 0, worldWidth - runnerWidth));
-        runnerRectangle.set(runnerSprite.getX(), runnerSprite.getY(), runnerWidth, runnerHeight);
+        player.update(delta);
 
         //Drops' Hitbox
         for (int i = drops.size - 1; i >= 0; i--) {
             Drop drop = drops.get(i);
             drop.update(delta);
 
-            if (drop.getSprite().getY() < -drop.getSprite().getHeight()) { // out of screen
+            if (drop.isOffScreen()) {
                 drops.removeIndex(i);
-            } else if (runnerRectangle.overlaps(drop.getRectangle())) { // player hit the drop
-                drop.onCatch(this); // do the work define for each drop type
+                continue;
+            }
+            if (drop.overlaps(player.getRectangle())) {
+                drop.onCatch(player);
                 drops.removeIndex(i);
             }
         }
@@ -112,26 +103,37 @@ public class GameScreen implements Screen {
             createDrop();
         }
 
+        // check conditions
+        if (player.getCrystalCollected()>=5) {
+            game.setScreen(new LoadScreen(game));
+            game.level++;
+            dispose();
+            // increase difficulty
+        }
+        if (player.getHealth() <= 0) {
+            game.setScreen(new GameOverScreen(game));
+            dispose();
+        }
+
     }
 
+
+    // Custom Methods for game
+    // random drops
     private void createDrop() {
-        float dropWidth = 1;
-        float worldWidth = game.viewport.getWorldWidth();
-        float worldHeight = game.viewport.getWorldHeight();
-        float xPos = MathUtils.random(0F, worldWidth - dropWidth);
+        float p = MathUtils.random();
+        Drop drop;
 
-        //occur chances for each drop // don't like it yet, fix later
-        float rand = MathUtils.random();
-        float bulletChance = 0.5f + 0.1f * (level - 1);
-        float crystalChance = 0.3f - 0.1f * (level - 1);
+        // difficulty increase by level
+        float bulletProb = Math.min(0.5f + game.level * 0.05f, 0.9f); // will not be more than 0.9f
+        float healthProb = Math.min(0.1f + game.level * 0.02f, 0.35f);
+        float crystalProb = 1f - bulletProb - healthProb;
 
-        if (rand < bulletChance) {
-            drops.add(new BulletDrop(bulletTexture, xPos, worldHeight));
-        } else if (rand < bulletChance + crystalChance) {
-            drops.add(new CrystalDrop(crystalTexture, xPos, worldHeight));
-        } else {
-            drops.add(new HealthDrop(healthTexture, xPos, worldHeight));
-        }
+        if (p < bulletProb) drop = new BulletDrop(bulletTexture, game);
+        else if (p < bulletProb + healthProb) drop = new HealthDrop(healthTexture, game);
+        else drop = new CrystalDrop(crystalTexture, game);
+
+        drops.add(drop);
     }
 
     private void draw() {
@@ -147,16 +149,16 @@ public class GameScreen implements Screen {
         game.batch.draw(backgroundTexture, 0, 0, worldWidth, worldHeight);
 
         //Fonts - replace with UI later
-        game.font.draw(game.batch, "Health: " + runnerHealth, 0, worldHeight);
-        game.font.draw(game.batch, "Crystals: " + crystalCollected, 0, worldHeight - 0.25f);
-        game.font.draw(game.batch, "Level: " + level, worldWidth - 0.6f, worldHeight);
+        game.font.draw(game.batch, "Health: " + player.getHealth(), 0, worldHeight);
+        game.font.draw(game.batch, "Crystals: " + player.getCrystalCollected(), 0, worldHeight - 0.25f);
+        game.font.draw(game.batch, "Level: " + game.level, worldWidth - 0.6f, worldHeight);
 
         //Player
-        runnerSprite.draw(game.batch);
+        player.draw(game.batch);
 
         //Drops
         for (Drop drop : drops) {
-            drop.getSprite().draw(game.batch);
+            drop.draw(game.batch);
         }
 
 
@@ -186,9 +188,9 @@ public class GameScreen implements Screen {
     @Override
     public void dispose() {
         backgroundTexture.dispose();
-        runnerTexture.dispose();
         bulletTexture.dispose();
         healthTexture.dispose();
         crystalTexture.dispose();
+        player.dispose();
     }
 }

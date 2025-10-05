@@ -4,37 +4,14 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Rectangle;
 
-public class CrystalDrop implements Drop {
-    private final Sprite sprite;
-    private final Rectangle rectangle;
-
-    public CrystalDrop(Texture texture, float startX, float startY) {
-        sprite = new Sprite(texture);
-        sprite.setSize(1f, 1f);
-        sprite.setPosition(startX, startY);
-
-        rectangle = new Rectangle(sprite.getX(), sprite.getY(), sprite.getWidth(), sprite.getHeight());
-    }
-
-
-    @Override
-    public Sprite getSprite() {
-        return sprite;
+public class CrystalDrop extends Drop {
+    public CrystalDrop(Texture texture, Main game) {
+        super(texture, game);
+        this.speed = 3f;
     }
 
     @Override
-    public Rectangle getRectangle() {
-        return rectangle;
-    }
-
-    @Override
-    public void update(float delta) {
-        sprite.translateY(-3f * delta);
-        rectangle.set(sprite.getX(), sprite.getY(), sprite.getWidth(), sprite.getHeight());
-    }
-
-    @Override
-    public void onCatch(GameScreen screen) {
-        screen.crystalCollected++;
+    public void onCatch(Player player) {
+        player.collectCrystal();
     }
 }

@@ -6,13 +6,10 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.utils.ScreenUtils;
 
-/**
- * First screen of the application. Displayed after the application is created.
- */
-public class FirstScreen implements Screen {
+public class LoadScreen implements Screen {
     final Main game;
 
-    public FirstScreen(final Main game) {
+    public LoadScreen(final Main game) {
         this.game = game;
     }
 
@@ -29,9 +26,7 @@ public class FirstScreen implements Screen {
 
         game.batch.begin();
 
-        game.font.draw(game.batch, "Welcome to GiraffeRun!", 1, 1.5f);
-        game.font.draw(game.batch, "Tap AnyWhere or Space to Begin", 1, 1);
-
+        game.font.draw(game.batch, "Alright, lets move on to next level!", 1, 1.5f);
 
         game.batch.end();
 
