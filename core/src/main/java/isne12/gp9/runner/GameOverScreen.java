@@ -29,13 +29,13 @@ public class GameOverScreen implements Screen {
 
         game.batch.begin();
         game.batch.draw(backGround, 0, 0, game.viewport.getWorldWidth(), game.viewport.getWorldHeight());
-        game.font.draw(game.batch, "Game Over!", 1, 1.5f);
-        game.font.draw(game.batch, "Tap AnyWhere or Spacebar to Restart", 1, 1);
+        game.font.draw(game.batch, "Game Over!", 0.5f, 1f);
+        game.font.draw(game.batch, "Enter to Restart", 0.5f, 0.5f);
 
 
         game.batch.end();
 
-        if (Gdx.input.isTouched() || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
             game.setScreen(new GameScreen(game));
             dispose();
         }

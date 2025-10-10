@@ -25,8 +25,8 @@ public class Main extends Game {
 
         font = new BitmapFont();
         font.setUseIntegerPositions(false);
-        font.setColor(Color.CYAN);
-        font.getData().setScale(2*(viewport.getWorldHeight() / Gdx.graphics.getHeight()));
+        font.setColor(0f, 0.8f, 0.9f, 1f);// Slightly brighter, more vibrant cyan
+        font.getData().setScale(2 * (viewport.getWorldHeight() / Gdx.graphics.getHeight()));
 
         this.setScreen(new FirstScreen(this));
     }

@@ -29,13 +29,13 @@ public class GameWinScreen implements Screen {
 
         game.batch.begin();
         game.batch.draw(backGround, 0, 0, game.viewport.getWorldWidth(), game.viewport.getWorldHeight());
-        game.font.draw(game.batch, "Congratuation for winning RunGiraffeRun!", 1, 1.5f);
-        game.font.draw(game.batch, "Tap AnyWhere or Spacebar if you want to Play Again", 1, 1);
+        game.font.draw(game.batch, "Congratuation for winning RunGiraffeRun!", 0.5f, 1.5f);
+        game.font.draw(game.batch, "Enter Space if you want to Play Again", 0.5f, 1);
 
 
         game.batch.end();
 
-        if (Gdx.input.isTouched() || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
             game.setScreen(new GameScreen(game));
             dispose();
         }

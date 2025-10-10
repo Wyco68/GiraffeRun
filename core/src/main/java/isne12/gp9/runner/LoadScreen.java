@@ -29,7 +29,7 @@ public class LoadScreen implements Screen {
 
         game.batch.begin();
         game.batch.draw(backGround, 0, 0, game.viewport.getWorldWidth(), game.viewport.getWorldHeight());
-        game.font.draw(game.batch, "Alright, lets move on to next level!", 1, 2f);
+        game.font.draw(game.batch, "Alright, lets move on to next level!", 0.5f, 1);
 
         game.batch.end();
 

@@ -44,12 +44,12 @@ public class FirstScreen implements Screen {
         y -= spacing;
         game.font.draw(game.batch, "Use Cursor and Click - Teleport", 1, y);
         y -= spacing;
-        game.font.draw(game.batch, "Tap Anywhere or Space to Begin", 1, y);
+        game.font.draw(game.batch, "Enter Space to Begin", 1, y);
 
 
         game.batch.end();
 
-        if (Gdx.input.isTouched() || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
             game.setScreen(new GameScreen(game));
             dispose();
         }

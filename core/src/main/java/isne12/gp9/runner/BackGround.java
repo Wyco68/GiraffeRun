@@ -27,14 +27,9 @@ public class BackGround {
     }
 
     public void render(SpriteBatch batch, float worldWidth, float worldHeight) {
-        float pixelToWorldX = worldWidth / (float) Gdx.graphics.getWidth();
         float pixelToWorldY = worldHeight / (float) Gdx.graphics.getHeight();
 
-        float texWWorld = texture.getWidth() * pixelToWorldX;
         float texHWorld = texture.getHeight() * pixelToWorldY;
-
-        // center horizontally
-        float drawX = (worldWidth - texWWorld) / 2f;
 
         // vertical tiling only
         float startY = scrollY;
@@ -43,7 +38,7 @@ public class BackGround {
 
         float y = startY;
         while (y < worldHeight) {
-            batch.draw(texture, drawX, y, texWWorld, texHWorld);
+            batch.draw(texture, 0, y, worldWidth, texHWorld);
             y += texHWorld;
         }
     }
