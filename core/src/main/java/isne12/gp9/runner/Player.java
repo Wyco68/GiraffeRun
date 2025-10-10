@@ -128,12 +128,21 @@ public class Player {
         sprite.draw(batch);
     }
 
+    // GETTERS
     public int getHealth() {
         return this.health;
     }
 
     public int getCrystalCollected() {
         return this.crystalCollected;
+    }
+
+    public float getShieldCoolDown() {
+        return this.shieldCooldown;
+    }
+
+    public float getTeleportCooldown() {
+        return this.teleportCooldown;
     }
 
     public Rectangle getRectangle() {

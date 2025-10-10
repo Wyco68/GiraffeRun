@@ -37,6 +37,8 @@ public class GameScreen implements Screen {
     // UI
     Texture heartIcon;
     Texture crystalIcon;
+    Texture shieldIcon;
+    Texture teleportIcon;
 
     // Constructor
     public GameScreen(final Main game) {
@@ -63,6 +65,8 @@ public class GameScreen implements Screen {
         // UI
         heartIcon = new Texture("heart.png");
         crystalIcon = new Texture("crystal.png");
+        shieldIcon = new Texture("shieldIcon.png");
+        teleportIcon = new Texture("teleportIcon.png");
 
     }
 
@@ -136,7 +140,7 @@ public class GameScreen implements Screen {
         if (player.getCrystalCollected() >= 5) {
             gameWinSound.play();
             if (game.level >= 3) {
-                game.level=1; // to play again from the beginning again
+                game.level = 1; // to play again from the beginning again
                 game.setScreen(new GameWinScreen(game));
             } else {
                 game.level++;
@@ -179,16 +183,45 @@ public class GameScreen implements Screen {
         float worldHeight = game.viewport.getWorldHeight();
         backGround.render(game.batch, worldWidth, worldHeight);
 
-        //Fonts - replace with UI later
         float iconSize = 0.4f;
+        float padding = 0.1f;
+
+        // Health (top-left) ---
         for (int i = 0; i < player.getHealth(); i++) {
-            game.batch.draw(heartIcon, 0.1f + i * (iconSize + 0.05f), worldHeight - iconSize - 0.1f, iconSize, iconSize);
+            game.batch.draw(heartIcon, padding + i * (iconSize + 0.05f), worldHeight - iconSize - padding, iconSize, iconSize);
         }
+
+        // CrystalCollected (top-right) ---
         float crystalX = worldWidth - iconSize - 1f;
-        float crystalY = worldHeight - iconSize - 0.1f;
+        float crystalY = worldHeight - iconSize - padding - 0.5f;
         game.batch.draw(crystalIcon, crystalX, crystalY, iconSize, iconSize);
         game.font.draw(game.batch, "x " + player.getCrystalCollected(), crystalX + iconSize + 0.1f, crystalY + iconSize - 0.1f);
-        game.font.draw(game.batch, "Level: " + game.level, worldWidth - 0.6f, worldHeight);
+
+        // Level
+        game.font.draw(game.batch, "Level: " + game.level, worldWidth - 1f, worldHeight);
+
+        // Cooldown Icons
+        float cooldownIconSize = 0.8f;
+        float cooldownY = worldHeight - iconSize - padding - iconSize - 0.5f; // just below hearts
+
+        // Shield Icon
+        game.batch.draw(shieldIcon, padding, cooldownY, cooldownIconSize, cooldownIconSize);
+        if (player.getShieldCoolDown() > 0) {
+            String shieldText = "" + Math.round(player.getShieldCoolDown() * 10) / 10f;
+            game.font.draw(game.batch, shieldText,
+                padding + cooldownIconSize / 4f,
+                cooldownY + cooldownIconSize / 1.5f);
+        }
+
+        // Teleport Icon (next to shield)
+        float teleportX = padding + cooldownIconSize + 0.1f;
+        game.batch.draw(teleportIcon, teleportX, cooldownY, cooldownIconSize, cooldownIconSize);
+        if (player.getTeleportCooldown() > 0) {
+            String teleportText = "" + Math.round(player.getTeleportCooldown() * 10) / 10f;
+            game.font.draw(game.batch, teleportText,
+                teleportX + cooldownIconSize / 4f,
+                cooldownY + cooldownIconSize / 1.5f);
+        }
 
         //Player
         player.draw(game.batch);
@@ -200,6 +233,7 @@ public class GameScreen implements Screen {
 
         game.batch.end();
     }
+
 
     @Override
     public void resize(int width, int height) {

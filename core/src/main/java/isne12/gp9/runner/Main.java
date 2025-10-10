@@ -2,6 +2,7 @@ package isne12.gp9.runner;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.viewport.FitViewport;
@@ -24,7 +25,8 @@ public class Main extends Game {
 
         font = new BitmapFont();
         font.setUseIntegerPositions(false);
-        font.getData().setScale(viewport.getWorldHeight() / Gdx.graphics.getHeight());
+        font.setColor(Color.CYAN);
+        font.getData().setScale(2*(viewport.getWorldHeight() / Gdx.graphics.getHeight()));
 
         this.setScreen(new FirstScreen(this));
     }

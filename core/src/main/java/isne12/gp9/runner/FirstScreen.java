@@ -32,8 +32,19 @@ public class FirstScreen implements Screen {
 
         game.batch.begin();
         game.batch.draw(backGround, 0, 0, game.viewport.getWorldWidth(), game.viewport.getWorldHeight());
-        game.font.draw(game.batch, "Welcome to GiraffeRun!", 1, 1.5f);
-        game.font.draw(game.batch, "Tap AnyWhere or Space to Begin", 1, 1);
+        float y = 4.5f;      // starting Y position
+        float spacing = 0.6f; // space between lines
+        game.font.draw(game.batch, "Welcome to GiraffeRun!", 1, y);
+        y -= spacing;
+        game.font.draw(game.batch, "S - Move Left", 1, y);
+        y -= spacing;
+        game.font.draw(game.batch, "D - Move Right", 1, y);
+        y -= spacing;
+        game.font.draw(game.batch, "A - Activate Shield", 1, y);
+        y -= spacing;
+        game.font.draw(game.batch, "Use Cursor and Click - Teleport", 1, y);
+        y -= spacing;
+        game.font.draw(game.batch, "Tap Anywhere or Space to Begin", 1, y);
 
 
         game.batch.end();
