@@ -6,7 +6,7 @@ public class HealthDrop extends Drop {
 
     public HealthDrop(Texture texture, Main game) {
         super(texture, game);
-        this.speed=3f;
+        this.speed=2f;
     }
 
     @Override

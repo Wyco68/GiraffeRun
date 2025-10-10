@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 
 public class Player {
 
@@ -72,10 +73,11 @@ public class Player {
     }
 
     //skills
-    public void teleport(float pos) {
+    public void teleport(Vector2 touchPos) {
         if (teleportCooldown <= 0) {
             //use skill
-            sprite.setCenterX(pos);
+            teleportSound.play();
+            sprite.setCenterX(touchPos.x);
             //reset the cooldown
             teleportCooldown = 4f;
         }
@@ -120,7 +122,6 @@ public class Player {
         float playerWidth = sprite.getWidth();
         sprite.setX(MathUtils.clamp(sprite.getX(), 0, worldWidth - playerWidth));
         rectangle.set(sprite.getX(), sprite.getY(), sprite.getWidth(), sprite.getHeight());
-        teleportSound.play();
     }
 
     public void draw(SpriteBatch batch) {

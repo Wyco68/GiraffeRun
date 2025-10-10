@@ -13,7 +13,7 @@ public abstract class Drop {
 
     public Drop(Texture texture, Main game) {
         sprite = new Sprite(texture);
-        sprite.setSize(1, 1);
+        sprite.setSize(0.5f, 0.5f);
         float worldWidth = game.viewport.getWorldWidth();
         float worldHeight = game.viewport.getWorldHeight();
         sprite.setPosition(MathUtils.random(0, worldWidth - sprite.getWidth()), worldHeight);

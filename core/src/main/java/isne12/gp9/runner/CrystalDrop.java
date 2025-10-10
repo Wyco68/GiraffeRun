@@ -7,7 +7,7 @@ import com.badlogic.gdx.math.Rectangle;
 public class CrystalDrop extends Drop {
     public CrystalDrop(Texture texture, Main game) {
         super(texture, game);
-        this.speed = 3f;
+        this.speed = 2f;
     }
 
     @Override

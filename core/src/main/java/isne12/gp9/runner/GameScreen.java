@@ -8,6 +8,7 @@ import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 
@@ -16,13 +17,14 @@ public class GameScreen implements Screen {
     final Main game;
 
     //Resources
-    Texture backgroundTexture;
+    BackGround backGround;
     Music themeAudio;
     Sound gameWinSound;
     Sound gameOverSound;
 
     //Player
     Player player;
+    Vector2 touchPos;
 
 
     // Drops
@@ -32,25 +34,35 @@ public class GameScreen implements Screen {
     Array<Drop> drops;
     float dropTimer;
 
+    // UI
+    Texture heartIcon;
+    Texture crystalIcon;
 
     // Constructor
     public GameScreen(final Main game) {
         this.game = game;
 
         //// Load Resources
-        backgroundTexture = new Texture("BG" + game.level + ".png");
+        backGround = new BackGround("BG" + game.level + ".png");
+        gameWinSound = Gdx.audio.newSound(Gdx.files.internal("gameWinSound.mp3"));
+        gameOverSound = Gdx.audio.newSound(Gdx.files.internal("gameOverSound.mp3"));
         themeAudio = Gdx.audio.newMusic(Gdx.files.internal("themeAudio.mp3"));
         themeAudio.setLooping(true);
         themeAudio.setVolume(0.3f);
 
         // Player
         player = new Player(new Texture("backView.png"), game);
+        touchPos = new Vector2();
 
         // Drop
         bulletTexture = new Texture("rocket.png");
         healthTexture = new Texture("heart.png");
         crystalTexture = new Texture("crystal.png");
         drops = new Array<>();
+
+        // UI
+        heartIcon = new Texture("heart.png");
+        crystalIcon = new Texture("crystal.png");
 
     }
 
@@ -82,12 +94,21 @@ public class GameScreen implements Screen {
         else if (Gdx.input.isKeyJustPressed(Input.Keys.A)) {
             player.activateShield();
         }
+
+        // use teleport
+        if (Gdx.input.isTouched()) {
+            touchPos.set(Gdx.input.getX(), Gdx.input.getY());
+            game.viewport.unproject(touchPos);
+            player.teleport(touchPos);
+        }
     }
 
     private void logic() {
         float worldWidth = game.viewport.getWorldWidth();
+        float worldHeight = game.viewport.getWorldHeight();
         float delta = Gdx.graphics.getDeltaTime();
 
+        backGround.update(delta, worldHeight);
         player.update(delta);
 
         //Drops' Hitbox
@@ -113,15 +134,18 @@ public class GameScreen implements Screen {
 
         // check conditions
         if (player.getCrystalCollected() >= 5) {
-            if (game.level < 4) {
+            gameWinSound.play();
+            if (game.level >= 3) {
+                game.level=1; // to play again from the beginning again
+                game.setScreen(new GameWinScreen(game));
+            } else {
                 game.level++;
                 game.setScreen(new LoadScreen(game));
             }
-            reset();
         }
         if (player.getHealth() <= 0) {
+            gameOverSound.play();
             game.setScreen(new GameOverScreen(game));
-            reset();
         }
     }
 
@@ -153,11 +177,17 @@ public class GameScreen implements Screen {
         //Background
         float worldWidth = game.viewport.getWorldWidth();
         float worldHeight = game.viewport.getWorldHeight();
-        game.batch.draw(backgroundTexture, 0, 0, worldWidth, worldHeight);
+        backGround.render(game.batch, worldWidth, worldHeight);
 
         //Fonts - replace with UI later
-        game.font.draw(game.batch, "Health: " + player.getHealth(), 0, worldHeight);
-        game.font.draw(game.batch, "Crystals: " + player.getCrystalCollected(), 0, worldHeight - 0.25f);
+        float iconSize = 0.4f;
+        for (int i = 0; i < player.getHealth(); i++) {
+            game.batch.draw(heartIcon, 0.1f + i * (iconSize + 0.05f), worldHeight - iconSize - 0.1f, iconSize, iconSize);
+        }
+        float crystalX = worldWidth - iconSize - 1f;
+        float crystalY = worldHeight - iconSize - 0.1f;
+        game.batch.draw(crystalIcon, crystalX, crystalY, iconSize, iconSize);
+        game.font.draw(game.batch, "x " + player.getCrystalCollected(), crystalX + iconSize + 0.1f, crystalY + iconSize - 0.1f);
         game.font.draw(game.batch, "Level: " + game.level, worldWidth - 0.6f, worldHeight);
 
         //Player
@@ -167,7 +197,6 @@ public class GameScreen implements Screen {
         for (Drop drop : drops) {
             drop.draw(game.batch);
         }
-
 
         game.batch.end();
     }
@@ -189,7 +218,7 @@ public class GameScreen implements Screen {
 
     @Override
     public void hide() {
-
+        dispose();
     }
 
     public void reset() {
@@ -200,10 +229,12 @@ public class GameScreen implements Screen {
 
     @Override
     public void dispose() {
-        backgroundTexture.dispose();
+        backGround.dispose();
         bulletTexture.dispose();
         healthTexture.dispose();
         crystalTexture.dispose();
+        heartIcon.dispose();
+        crystalIcon.dispose();
         player.dispose();
         themeAudio.dispose();
         gameWinSound.dispose();
