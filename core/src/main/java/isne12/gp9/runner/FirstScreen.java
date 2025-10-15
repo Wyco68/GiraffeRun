@@ -40,9 +40,9 @@ public class FirstScreen implements Screen {
         y -= spacing;
         game.font.draw(game.batch, "D - Move Right", 1, y);
         y -= spacing;
-        game.font.draw(game.batch, "A - Activate Shield", 1, y);
+        game.font.draw(game.batch, "Right-Click - Activate Shield", 1, y);
         y -= spacing;
-        game.font.draw(game.batch, "Use Cursor and Click - Teleport", 1, y);
+        game.font.draw(game.batch, "Use Cursor and Left-Click - Teleport", 1, y);
         y -= spacing;
         game.font.draw(game.batch, "Enter Space to Begin", 1, y);
 

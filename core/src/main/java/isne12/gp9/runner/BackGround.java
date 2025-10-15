@@ -7,7 +7,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 public class BackGround {
     private final Texture texture;
     private float scrollY;
-    private static final float SPEED_WORLD = 2f; // match drop speed (world units/sec)
 
     public BackGround(String filePath) {
         texture = new Texture(Gdx.files.internal(filePath));
@@ -15,11 +14,11 @@ public class BackGround {
         scrollY = 0;
     }
 
-    public void update(float delta, float worldHeight) {
+    public void update(float delta, float worldHeight, Main game) {
         float pixelToWorldY = worldHeight / (float) Gdx.graphics.getHeight();
         float texHWorld = texture.getHeight() * pixelToWorldY;
 
-        scrollY -= SPEED_WORLD * delta;
+        scrollY -= (game.globalSpeed+ game.level) * delta;
 
         if (scrollY <= -texHWorld) {
             scrollY += texHWorld;

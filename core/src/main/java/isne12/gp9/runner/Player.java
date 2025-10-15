@@ -3,20 +3,12 @@ package isne12.gp9.runner;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
-public class Player {
-
-    private final Main game;
+public class Player extends GameObject {
 
     // Player' properties
-    private final Sprite sprite;
-    private final Rectangle rectangle;
-    private float speed = 4f;
     private int health;
     private int crystalCollected;
 
@@ -26,7 +18,6 @@ public class Player {
     private boolean shieldActive;
     private float teleportCooldown;
 
-
     // Animations
     private final Texture runRight;
     private final Texture runLeft;
@@ -34,22 +25,20 @@ public class Player {
     private final Texture moveLeft;
     private boolean running = true;
     private float animationTimer = 0f;
-    private final float frameDuration = 0.15f;
 
     // Sound Effects;
     Sound hitSound;
+    Sound shieldHitSound;
     Sound healSound;
     Sound collectSound;
     Sound teleportSound;
 
     // Constructor
     public Player(Texture texture, Main game) {
-        this.game = game;
-        this.sprite = new Sprite(texture);
-        sprite.setSize(1, 1);
+        super(texture, game);
+        sprite.setSize(1f, 1f);
         sprite.setX(game.viewport.getWorldWidth() / 2);
 
-        this.rectangle = new Rectangle(sprite.getX(), sprite.getY(), sprite.getWidth(), sprite.getHeight());
         this.health = 5;
 
         runRight = new Texture("rightMove.png");
@@ -58,6 +47,7 @@ public class Player {
         moveLeft = new Texture("leftMoveShield.png");
 
         hitSound = Gdx.audio.newSound(Gdx.files.internal("hitSound.mp3"));
+        shieldHitSound = Gdx.audio.newSound(Gdx.files.internal("shieldHit.mp3"));
         healSound = Gdx.audio.newSound(Gdx.files.internal("healSound.mp3"));
         collectSound = Gdx.audio.newSound(Gdx.files.internal("collectSound.mp3"));
         teleportSound = Gdx.audio.newSound(Gdx.files.internal("teleportSound.mp3"));
@@ -91,7 +81,7 @@ public class Player {
             //reset the cooldown
             shieldCooldown = 8f;
             // player's speed reduced by half while using shield
-            speed = 2f;
+            speed /= 2f;
         }
     }
 
@@ -99,6 +89,7 @@ public class Player {
     //for animation and cooldown
     public void update(float delta) {
         animationTimer += delta;
+        float frameDuration = 0.15f;
         if (animationTimer >= frameDuration) {
             animationTimer = 0;
             running = !running;
@@ -111,7 +102,7 @@ public class Player {
             shieldTimer -= delta;
             if (shieldTimer <= 0) {
                 shieldActive = false;
-                speed = 4f;// restore original speed
+                speed = game.globalSpeed;// restore original speed
             }
         }
         if (shieldCooldown > 0) shieldCooldown -= delta;
@@ -124,10 +115,6 @@ public class Player {
         rectangle.set(sprite.getX(), sprite.getY(), sprite.getWidth(), sprite.getHeight());
     }
 
-    public void draw(SpriteBatch batch) {
-        sprite.draw(batch);
-    }
-
     // GETTERS
     public int getHealth() {
         return this.health;
@@ -137,7 +124,7 @@ public class Player {
         return this.crystalCollected;
     }
 
-    public float getShieldCoolDown() {
+    public float getShieldCooldown() {
         return this.shieldCooldown;
     }
 
@@ -145,13 +132,12 @@ public class Player {
         return this.teleportCooldown;
     }
 
-    public Rectangle getRectangle() {
-        return this.rectangle;
-    }
-
     // get hit or not , depend on the shield
     public void getHit() {
-        if (shieldActive) return;
+        if (shieldActive) {
+            shieldHitSound.play();
+            return;
+        }
         hitSound.play();
         health--;
     }
@@ -188,6 +174,7 @@ public class Player {
         moveLeft.dispose();
 
         hitSound.dispose();
+        shieldHitSound.dispose();
         healSound.dispose();
         collectSound.dispose();
         teleportSound.dispose();

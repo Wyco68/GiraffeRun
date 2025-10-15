@@ -95,12 +95,12 @@ public class GameScreen implements Screen {
             player.moveLeft(delta);
         }
         // use shield
-        else if (Gdx.input.isKeyJustPressed(Input.Keys.A)) {
+        if (Gdx.input.isButtonJustPressed(Input.Buttons.RIGHT)) {
             player.activateShield();
         }
 
         // use teleport
-        if (Gdx.input.isTouched()) {
+        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
             touchPos.set(Gdx.input.getX(), Gdx.input.getY());
             game.viewport.unproject(touchPos);
             player.teleport(touchPos);
@@ -112,7 +112,7 @@ public class GameScreen implements Screen {
         float worldHeight = game.viewport.getWorldHeight();
         float delta = Gdx.graphics.getDeltaTime();
 
-        backGround.update(delta, worldHeight);
+        backGround.update(delta, worldHeight, game);
         player.update(delta);
 
         //Drops' Hitbox
@@ -206,8 +206,8 @@ public class GameScreen implements Screen {
 
         // Shield Icon
         game.batch.draw(shieldIcon, padding, cooldownY, cooldownIconSize, cooldownIconSize);
-        if (player.getShieldCoolDown() > 0) {
-            String shieldText = "" + Math.round(player.getShieldCoolDown() * 10) / 10f;
+        if (player.getShieldCooldown() > 0) {
+            String shieldText = "" + Math.round(player.getShieldCooldown() * 10) / 10f;
             game.font.draw(game.batch, shieldText,
                 padding + cooldownIconSize / 4f,
                 cooldownY + cooldownIconSize / 1.5f);

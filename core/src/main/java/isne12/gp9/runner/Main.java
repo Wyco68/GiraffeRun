@@ -15,11 +15,13 @@ public class Main extends Game {
     public BitmapFont font;
     public FitViewport viewport;
     public int level;
+    public float globalSpeed;
 
     @Override
 
     public void create() {
         level = 1;
+        globalSpeed = 3f;
         batch = new SpriteBatch();
         viewport = new FitViewport(8, 5);
 
