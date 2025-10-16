@@ -13,7 +13,7 @@ public class GameOverScreen implements Screen {
 
     public GameOverScreen(final Main game) {
         this.game = game;
-        backGround = new Texture("gameOverScreen.png");
+        backGround = new Texture(Gdx.files.internal("GameOverScreen.png"));
     }
 
     @Override

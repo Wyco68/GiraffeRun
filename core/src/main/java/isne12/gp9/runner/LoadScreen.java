@@ -13,7 +13,7 @@ public class LoadScreen implements Screen {
 
     public LoadScreen(final Main game) {
         this.game = game;
-        backGround = new Texture("LoadScreen.png");
+        backGround = new Texture(Gdx.files.internal("LoadScreen.png"));
     }
 
     @Override
@@ -32,6 +32,11 @@ public class LoadScreen implements Screen {
         game.font.draw(game.batch, "Alright, lets move on to next level!", 0.5f, 1);
 
         game.batch.end();
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+            game.setScreen(new GameScreen(game));
+            dispose();
+        }
     }
 
     @Override

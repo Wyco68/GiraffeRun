@@ -6,7 +6,7 @@ public class BulletDrop extends Drop {
 
     public BulletDrop(Texture texture, Main game) {
         super(texture, game);
-        this.speed *= 2f;
+        this.speed *= 2.5f;
     }
 
     @Override

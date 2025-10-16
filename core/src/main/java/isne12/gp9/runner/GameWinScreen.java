@@ -13,7 +13,7 @@ public class GameWinScreen implements Screen {
 
     public GameWinScreen(final Main game) {
         this.game = game;
-        backGround = new Texture("MenuScreen.png");
+        backGround = new Texture(Gdx.files.internal("MenuScreen.png"));
     }
 
     @Override
