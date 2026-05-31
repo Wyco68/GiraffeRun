@@ -37,11 +37,11 @@ public class FirstScreen implements Screen {
         float spacing = 0.6f;
         game.font.draw(game.batch, "Welcome to GiraffeRun!", 1, y);
         y -= spacing;
-        game.font.draw(game.batch, "A / Left / S - Move Left", 1, y);
+        game.font.draw(game.batch, "A / Left - Move Left", 1, y);
         y -= spacing;
         game.font.draw(game.batch, "D / Right - Move Right", 1, y);
         y -= spacing;
-        game.font.draw(game.batch, "Right-Click - Activate Shield", 1, y);
+        game.font.draw(game.batch, "S / Right-Click - Activate Shield", 1, y);
         y -= spacing;
         game.font.draw(game.batch, "Use Cursor and Left-Click - Teleport", 1, y);
         y -= spacing;

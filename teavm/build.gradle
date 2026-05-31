@@ -1,0 +1,63 @@
+plugins {
+    id 'java'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+eclipse.project.name = appName + '-teavm'
+
+dependencies {
+    implementation project(':core')
+    implementation "com.badlogicgames.gdx:gdx:$gdxVersion"
+    implementation "com.github.xpenatan.gdx-teavm:backend-web:$gdxTeaVMVersion"
+}
+
+def teavmBuilderMain = 'isne12.gp9.runner.teavm.TeaVMBuilder'
+def assetsDir = rootProject.file('assets').absolutePath
+
+tasks.register('runWasm', JavaExec) {
+    group = 'teavm'
+    description = 'Compile to WebAssembly and serve at http://localhost:8080'
+    dependsOn classes
+    mainClass = teavmBuilderMain
+    classpath = sourceSets.main.runtimeClasspath
+    workingDir = projectDir
+    args 'run', 'wasm'
+    systemProperty 'assets.path', assetsDir
+}
+
+tasks.register('buildWasm', JavaExec) {
+    group = 'teavm'
+    description = 'Build WebAssembly bundle to teavm/build/dist/webapp'
+    dependsOn classes
+    mainClass = teavmBuilderMain
+    classpath = sourceSets.main.runtimeClasspath
+    workingDir = projectDir
+    args 'build', 'wasm'
+    systemProperty 'assets.path', assetsDir
+}
+
+tasks.register('runJs', JavaExec) {
+    group = 'teavm'
+    description = 'Compile to JavaScript and serve at http://localhost:8080'
+    dependsOn classes
+    mainClass = teavmBuilderMain
+    classpath = sourceSets.main.runtimeClasspath
+    workingDir = projectDir
+    args 'run', 'js'
+    systemProperty 'assets.path', assetsDir
+}
+
+tasks.register('buildJs', JavaExec) {
+    group = 'teavm'
+    description = 'Build JavaScript bundle to teavm/build/dist/webapp'
+    dependsOn classes
+    mainClass = teavmBuilderMain
+    classpath = sourceSets.main.runtimeClasspath
+    workingDir = projectDir
+    args 'build', 'js'
+    systemProperty 'assets.path', assetsDir
+}

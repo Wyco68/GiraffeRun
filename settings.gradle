@@ -5,4 +5,13 @@ plugins {
 // A list of which subprojects to load as part of the same larger project.
 // You can remove Strings from the list and reload the Gradle project
 // if you want to temporarily disable a subproject.
-include 'lwjgl3', 'core'
+include 'lwjgl3', 'core', 'teavm'
+
+includeBuild('tools/gdx-teavm') {
+    dependencySubstitution {
+        substitute module('com.github.xpenatan.gdx-teavm:backend-web') using project(':backends:backend-web')
+        substitute module('com.github.xpenatan.gdx-teavm:backend-shared') using project(':backends:backend-shared')
+        substitute module('com.github.xpenatan.gdx-teavm:gdx-freetype-teavm') using project(':extensions:gdx-freetype-teavm')
+        substitute module('com.github.xpenatan.gdx-teavm:asset-loader') using project(':extensions:asset-loader')
+    }
+}

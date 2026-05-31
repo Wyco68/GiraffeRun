@@ -1,5 +1,6 @@
 package isne12.gp9.runner;
 
+import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -8,7 +9,6 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
 /**
@@ -26,7 +26,6 @@ public class Main extends Game {
     private GameState state = GameState.LOADING;
     private int level = 1;
     private float globalSpeed = 3f;
-    private FreeTypeFontGenerator fontGenerator;
 
     @Override
     public void create() {
@@ -42,13 +41,13 @@ public class Main extends Game {
         whitePixel = new Texture(pixmap);
         pixmap.dispose();
 
-        fontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/Arial.ttf"));
-        FreeTypeFontGenerator.FreeTypeFontParameter param = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        param.size = 24;
-        param.color = new Color(0f, 0.8f, 0.9f, 1f);
-        font = fontGenerator.generateFont(param);
+        font = FontFactory.createHudFont();
         font.setUseIntegerPositions(false);
         updateFontScale();
+
+        if (Gdx.app.getType() != Application.ApplicationType.WebGL) {
+            Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
+        }
 
         setScreen(new LoadingScreen(this));
     }
@@ -99,9 +98,6 @@ public class Main extends Game {
         }
         if (assets != null) {
             assets.dispose();
-        }
-        if (fontGenerator != null) {
-            fontGenerator.dispose();
         }
         if (whitePixel != null) {
             whitePixel.dispose();

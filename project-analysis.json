@@ -149,15 +149,12 @@
     "Implement a high-score / persistent save system using libGDX Preferences API",
     "Add pause screen (ESC key) with resume/restart/quit options",
     "Replace default BitmapFont with FreeType-generated or distance-field font for crisp text at all resolutions",
-    "Add a dedicated GameWinScreen background texture rather than reusing MenuScreen.png",
     "Remap move-left to A key for standard WASD compliance; update FirstScreen instructions",
     "Implement object pooling (libGDX Pool<Drop>) for drop entities to reduce GC pressure at high spawn rates",
     "Refactor Player.dispose() to guard against already-disposed assets and call it in GameScreen.dispose()",
     "Add shieldIcon and teleportIcon disposal in GameScreen.dispose()",
     "Clamp crystal probability to a minimum (e.g., 0.15) to guarantee game is always winnable",
     "Add music crossfade or per-screen music tracks (GameOverScreen is silent)",
-    "Support controller input via libGDX controller extension for broader accessibility",
-    "Introduce particle effects (libGDX Particles) for crystal collection and teleport visual feedback",
-    "Add Android/iOS modules (libGDX supports both) for mobile publishing"
+    "Introduce particle effects (libGDX Particles) for crystal collection and teleport visual feedback"
   ]
 }

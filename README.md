@@ -1,14 +1,34 @@
 # 🦒 GiraffeRun
 
-> A 2D top-down arcade game where a giraffe dodges falling rockets and collects crystals to advance through three progressively challenging levels — built with **libGDX** in Java.
+> A 2D top-down arcade game where a giraffe dodges falling rockets and collects crystals to advance through three progressively challenging levels — available in the **browser (TeaVM WebAssembly)** and as a **desktop app (libGDX / Java)**.
 
 <br/>
 
 [![Java](https://img.shields.io/badge/Java-8%2B-orange?style=flat-square&logo=openjdk)](https://openjdk.org/)
 [![libGDX](https://img.shields.io/badge/libGDX-1.13.1-red?style=flat-square)](https://libgdx.com/)
+[![TeaVM](https://img.shields.io/badge/TeaVM-WASM-blue?style=flat-square)](https://teavm.org/)
 [![Gradle](https://img.shields.io/badge/Gradle-8.x-blue?style=flat-square&logo=gradle)](https://gradle.org/)
-[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey?style=flat-square)]()
+[![Platform](https://img.shields.io/badge/Platform-Web%20%7C%20Desktop-lightgrey?style=flat-square)]()
 [![License](https://img.shields.io/badge/License-Academic-green?style=flat-square)]()
+
+---
+
+## Play in Browser
+
+Compiles the LibGDX `core` module to **WebAssembly** via [gdx-teavm](https://github.com/xpenatan/gdx-teavm). See [`teavm/README.md`](teavm/README.md).
+
+```bash
+# One-time: clone gdx-teavm (or run scripts/setup-teavm.ps1)
+git clone --depth 1 --branch 1.5.6 https://github.com/xpenatan/gdx-teavm.git tools/gdx-teavm
+
+# Build WASM bundle → teavm/build/dist/webapp/
+./gradlew :teavm:buildWasm
+
+# Build and serve at http://localhost:8080
+./gradlew :teavm:runWasm
+```
+
+Requires **JDK 17+**. Deploy by uploading `teavm/build/dist/webapp/` to any static host.
 
 ---
 
@@ -30,7 +50,7 @@
 
 - 🦒 **Animated Giraffe Player** — Smooth 2-frame sprite animation with directional and shield variants
 - 🚀 **Falling Drop System** — Three drop types: rockets (hazard), hearts (heal), crystals (objective)
-- 🛡️ **Shield Ability** — Right-click to activate a 3-second damage shield with an 8-second cooldown
+- 🛡️ **Shield Ability** — Press `S` (or right-click) to activate a 3-second damage shield with an 8-second cooldown
 - ⚡ **Teleport Ability** — Left-click anywhere on screen to instantly reposition; 4-second cooldown
 - 🎯 **3 Progressive Levels** — Each level increases drop speed and bullet spawn probability
 - 🎨 **Unique Level Backgrounds** — Distinct scrolling backgrounds for each of the 3 levels
@@ -38,10 +58,22 @@
 - 📊 **Live HUD** — Health hearts, crystal counter, level indicator, and ability cooldown timers
 - 🖥️ **Resolution Independent** — FitViewport ensures consistent game world across all window sizes
 - 📦 **Single-JAR Distribution** — Cross-platform fat JAR requires only a JVM to run
+- 🌐 **Browser build** — TeaVM WebAssembly (same Java game code as desktop)
 
 ---
 
 ## 🏗️ Tech Stack
+
+### Web — TeaVM WASM (`teavm/`)
+
+| Layer | Technology | Version |
+|-------|-----------|---------|
+| Language | Java (same `core` module) | 11+ (teavm module) |
+| Compiler | TeaVM | 0.14 |
+| Backend | gdx-teavm | 1.5.6 |
+| Output | WebAssembly GC | `app.wasm` |
+
+### Desktop (Java)
 
 | Layer | Technology | Version |
 |-------|-----------|---------|
@@ -58,7 +90,11 @@
 
 ```
 GiraffeRun/
-├── core/                          # Platform-agnostic game logic
+├── teavm/                         # Browser WASM (TeaVM + gdx-teavm)
+│   └── src/main/java/.../teavm/   # WebLauncher, TeaVMBuilder
+├── tools/gdx-teavm/               # Vendored gdx-teavm 1.5.6 (Gradle includeBuild)
+│
+├── core/                          # Platform-agnostic game logic (Java)
 │   └── src/main/java/
 │       └── isne12/gp9/runner/
 │           ├── Main.java           # Application entry + shared state
@@ -159,8 +195,8 @@ gradlew.bat lwjgl3:run
 | Action | Input |
 |--------|-------|
 | Move Right | `→` Arrow or `D` |
-| Move Left | `←` Arrow or `S` |
-| Activate Shield | Right Mouse Button |
+| Move Left | `←` Arrow or `A` |
+| Activate Shield | `S` or Right Mouse Button |
 | Teleport | Left Mouse Button (click target location) |
 | Start Game / Next Level / Restart | `SPACE` |
 
