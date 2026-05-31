@@ -7,6 +7,7 @@ plugins {
 // if you want to temporarily disable a subproject.
 include 'lwjgl3', 'core', 'teavm'
 
+// Requires tools/gdx-teavm/ — run scripts/setup-teavm.ps1 or setup-teavm.sh first.
 includeBuild('tools/gdx-teavm') {
     dependencySubstitution {
         substitute module('com.github.xpenatan.gdx-teavm:backend-web') using project(':backends:backend-web')

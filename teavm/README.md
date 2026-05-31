@@ -7,15 +7,16 @@ This reuses the same `Main`, screens, entities, and assets as the desktop JAR.
 ## Prerequisites
 
 - **JDK 17+** (Gradle and TeaVM tooling)
-- **gdx-teavm 1.5.6** vendored at [`../tools/gdx-teavm/`](../tools/gdx-teavm/) (included via Gradle `includeBuild`)
+- **gdx-teavm 1.5.6** — **not** in this repo; cloned locally to `tools/gdx-teavm/` (Gradle `includeBuild`)
 
-First-time setup (if `tools/gdx-teavm` is missing):
+First-time setup:
 
 ```bash
-git clone --depth 1 --branch 1.5.6 https://github.com/xpenatan/gdx-teavm.git tools/gdx-teavm
+./scripts/setup-teavm.ps1          # Windows
+# ./scripts/setup-teavm.sh         # macOS / Linux
 ```
 
-Or run [`../scripts/setup-teavm.ps1`](../scripts/setup-teavm.ps1) on Windows.
+This clones [gdx-teavm](https://github.com/xpenatan/gdx-teavm) tag `1.5.6` and applies patches from `scripts/gdx-teavm-patches/` (75% viewport, Windows build fix).
 
 ## Build WebAssembly
 

@@ -1,0 +1,67 @@
+diff --git a/backends/backend-web/build.gradle.kts b/backends/backend-web/build.gradle.kts
+index 1111111..2222222 100644
+--- a/backends/backend-web/build.gradle.kts
++++ b/backends/backend-web/build.gradle.kts
+@@ -12,8 +12,6 @@ compileJavaTask.doFirst {
+         println(it)
+     }
+ }
+-compileJavaTask.dependsOn("clean")
+-compileJavaTask.mustRunAfter("clean")
+ 
+ dependencies {
+     api(project(":backends:backend-shared"))
+diff --git a/backends/backend-web/src/main/java/com/github/xpenatan/gdx/teavm/backends/web/WebApplication.java b/backends/backend-web/src/main/java/com/github/xpenatan/gdx/teavm/backends/web/WebApplication.java
+index 1111111..2222222 100644
+--- a/backends/backend-web/src/main/java/com/github/xpenatan/gdx/teavm/backends/web/WebApplication.java
++++ b/backends/backend-web/src/main/java/com/github/xpenatan/gdx/teavm/backends/web/WebApplication.java
+@@ -197,8 +197,8 @@ public class WebApplication implements Application {
+             window.addEventListener("resize", new EventListener() {
+                 @Override
+                 public void handleEvent(Event evt) {
+-                    int width = window.getClientWidth() - config.padHorizontal;
+-                    int height = window.getClientHeight() - config.padVertical;
++                    int width = WebViewportScale.scale(window.getClientWidth() - config.padHorizontal);
++                    int height = WebViewportScale.scale(window.getClientHeight() - config.padVertical);
+ 
+                     if(width <= 0 || height <= 0) {
+                         return;
+diff --git a/backends/backend-web/src/main/java/com/github/xpenatan/gdx/teavm/backends/web/WebGLGraphics.java b/backends/backend-web/src/main/java/com/github/xpenatan/gdx/teavm/backends/web/WebGLGraphics.java
+index 1111111..2222222 100644
+--- a/backends/backend-web/src/main/java/com/github/xpenatan/gdx/teavm/backends/web/WebGLGraphics.java
++++ b/backends/backend-web/src/main/java/com/github/xpenatan/gdx/teavm/backends/web/WebGLGraphics.java
+@@ -64,8 +64,8 @@ public class WebGLGraphics extends WebGraphics {
+             }
+             else {
+                 WebWindow currentWindow = WebWindow.get();
+-                int width = currentWindow.getClientWidth() - config.padHorizontal;
+-                int height = currentWindow.getClientHeight() - config.padVertical;
++                int width = WebViewportScale.scale(currentWindow.getClientWidth() - config.padHorizontal);
++                int height = WebViewportScale.scale(currentWindow.getClientHeight() - config.padVertical);
+                 setCanvasSize(width, height, config.usePhysicalPixels);
+             }
+         }
+diff --git a/backends/backend-web/src/main/java/com/github/xpenatan/gdx/teavm/backends/web/WebViewportScale.java b/backends/backend-web/src/main/java/com/github/xpenatan/gdx/teavm/backends/web/WebViewportScale.java
+new file mode 100644
+index 0000000..3333333
+--- /dev/null
++++ b/backends/backend-web/src/main/java/com/github/xpenatan/gdx/teavm/backends/web/WebViewportScale.java
+@@ -0,0 +1,18 @@
++package com.github.xpenatan.gdx.teavm.backends.web;
++
++final class WebViewportScale {
++
++    static final String PROPERTY = "girafferun.web.viewportScale";
++
++    private WebViewportScale() {
++    }
++
++    static int scale(int size) {
++        String value = System.getProperty(PROPERTY);
++        if (value == null || value.isEmpty()) {
++            return size;
++        }
++        float scale = Float.parseFloat(value);
++        return Math.max(1, (int) (size * scale));
++    }
++}

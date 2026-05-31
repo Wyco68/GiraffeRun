@@ -54,7 +54,7 @@ www-test/
 .gwt-tmp/
 
 ## TeaVM:
-# Not sure yet...
+/tools/gdx-teavm/
 
 ## IntelliJ, Android Studio:
 .idea/

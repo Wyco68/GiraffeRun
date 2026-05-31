@@ -18,8 +18,9 @@
 Compiles the LibGDX `core` module to **WebAssembly** via [gdx-teavm](https://github.com/xpenatan/gdx-teavm). See [`teavm/README.md`](teavm/README.md).
 
 ```bash
-# One-time: clone gdx-teavm (or run scripts/setup-teavm.ps1)
-git clone --depth 1 --branch 1.5.6 https://github.com/xpenatan/gdx-teavm.git tools/gdx-teavm
+# One-time: clone gdx-teavm + apply GiraffeRun patches (not stored in this repo)
+./scripts/setup-teavm.ps1          # Windows
+# ./scripts/setup-teavm.sh         # macOS / Linux
 
 # Build WASM bundle → teavm/build/dist/webapp/
 ./gradlew :teavm:buildWasm
@@ -92,7 +93,7 @@ Requires **JDK 17+**. Deploy by uploading `teavm/build/dist/webapp/` to any stat
 GiraffeRun/
 ├── teavm/                         # Browser WASM (TeaVM + gdx-teavm)
 │   └── src/main/java/.../teavm/   # WebLauncher, TeaVMBuilder
-├── tools/gdx-teavm/               # Vendored gdx-teavm 1.5.6 (Gradle includeBuild)
+├── tools/gdx-teavm/               # Local clone (gitignored; run scripts/setup-teavm.*)
 │
 ├── core/                          # Platform-agnostic game logic (Java)
 │   └── src/main/java/
