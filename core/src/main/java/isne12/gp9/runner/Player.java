@@ -1,6 +1,5 @@
 package isne12.gp9.runner;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.MathUtils;
@@ -8,17 +7,14 @@ import com.badlogic.gdx.math.Vector2;
 
 public class Player extends GameObject {
 
-    // Player' properties
     private int health;
     private int crystalCollected;
 
-    // Player's skills
     private float shieldTimer;
     private float shieldCooldown;
     private boolean shieldActive;
     private float teleportCooldown;
 
-    // Animations
     private final Texture runRight;
     private final Texture runLeft;
     private final Texture moveRight;
@@ -26,34 +22,33 @@ public class Player extends GameObject {
     private boolean running = true;
     private float animationTimer = 0f;
 
-    // Sound Effects;
-    Sound hitSound;
-    Sound shieldHitSound;
-    Sound healSound;
-    Sound collectSound;
-    Sound teleportSound;
+    private final Sound hitSound;
+    private final Sound shieldHitSound;
+    private final Sound healSound;
+    private final Sound collectSound;
+    private final Sound teleportSound;
 
-    // Constructor
-    public Player(Texture texture, Main game) {
+    public Player(Texture texture, Main game, Assets assets) {
         super(texture, game);
-        sprite.setSize(1f, 1f);
-        sprite.setX(game.viewport.getWorldWidth() / 2);
+        setDisplaySize(1f, 1f);
+        sprite.setX(game.viewport.getWorldWidth() / 2f - displayWidth / 2f);
+        sprite.setY(0f);
+        syncRectangle();
 
-        this.health = 5;
+        health = 5;
 
-        runRight = new Texture("rightMove.png");
-        runLeft = new Texture("leftMove.png");
-        moveRight = new Texture("rightMoveShield.png");
-        moveLeft = new Texture("leftMoveShield.png");
+        runRight = assets.getTexture(Assets.RUN_RIGHT);
+        runLeft = assets.getTexture(Assets.RUN_LEFT);
+        moveRight = assets.getTexture(Assets.SHIELD_RIGHT);
+        moveLeft = assets.getTexture(Assets.SHIELD_LEFT);
 
-        hitSound = Gdx.audio.newSound(Gdx.files.internal("hitSound.mp3"));
-        shieldHitSound = Gdx.audio.newSound(Gdx.files.internal("shieldHit.mp3"));
-        healSound = Gdx.audio.newSound(Gdx.files.internal("healSound.mp3"));
-        collectSound = Gdx.audio.newSound(Gdx.files.internal("collectSound.mp3"));
-        teleportSound = Gdx.audio.newSound(Gdx.files.internal("teleportSound.mp3"));
+        hitSound = assets.getSound(Assets.HIT_SOUND);
+        shieldHitSound = assets.getSound(Assets.SHIELD_HIT_SOUND);
+        healSound = assets.getSound(Assets.HEAL_SOUND);
+        collectSound = assets.getSound(Assets.COLLECT_SOUND);
+        teleportSound = assets.getSound(Assets.TELEPORT_SOUND);
     }
 
-    // inputHandling from gameScreen
     public void moveLeft(float delta) {
         sprite.translateX(-speed * delta);
     }
@@ -62,77 +57,70 @@ public class Player extends GameObject {
         sprite.translateX(speed * delta);
     }
 
-    //skills
-    public void teleport(Vector2 touchPos) {
-        if (teleportCooldown <= 0) {
-            //use skill
-            teleportSound.play();
-            sprite.setCenterX(touchPos.x);
-            //reset the cooldown
-            teleportCooldown = 4f;
+    public boolean tryTeleport(Vector2 touchPos) {
+        if (teleportCooldown > 0) {
+            return false;
         }
+        teleportSound.play();
+        sprite.setX(MathUtils.clamp(touchPos.x - displayWidth / 2f, 0,
+            game.viewport.getWorldWidth() - displayWidth));
+        syncRectangle();
+        teleportCooldown = 4f;
+        return true;
     }
 
     public void activateShield() {
         if (shieldCooldown <= 0 && !shieldActive) {
-            // activate it for a duration
             shieldActive = true;
             shieldTimer = 3f;
-            //reset the cooldown
             shieldCooldown = 8f;
-            // player's speed reduced by half while using shield
             speed /= 2f;
         }
     }
 
-
-    //for animation and cooldown
     public void update(float delta) {
         animationTimer += delta;
         float frameDuration = 0.15f;
         if (animationTimer >= frameDuration) {
             animationTimer = 0;
             running = !running;
-            if (shieldActive)
-                sprite.setTexture(running ? moveLeft : moveRight);
-            else sprite.setTexture(running ? runLeft : runRight);
+            if (shieldActive) {
+                setFrame(running ? moveLeft : moveRight);
+            } else {
+                setFrame(running ? runLeft : runRight);
+            }
         }
-        // shield
         if (shieldActive) {
             shieldTimer -= delta;
             if (shieldTimer <= 0) {
                 shieldActive = false;
-                speed = game.globalSpeed;// restore original speed
+                speed = game.getMoveSpeed();
             }
         }
         if (shieldCooldown > 0) shieldCooldown -= delta;
 
-        // teleport
         if (teleportCooldown > 0) teleportCooldown -= delta;
         float worldWidth = game.viewport.getWorldWidth();
-        float playerWidth = sprite.getWidth();
-        sprite.setX(MathUtils.clamp(sprite.getX(), 0, worldWidth - playerWidth));
-        rectangle.set(sprite.getX(), sprite.getY(), sprite.getWidth(), sprite.getHeight());
+        sprite.setX(MathUtils.clamp(sprite.getX(), 0, worldWidth - displayWidth));
+        syncRectangle();
     }
 
-    // GETTERS
     public int getHealth() {
-        return this.health;
+        return health;
     }
 
     public int getCrystalCollected() {
-        return this.crystalCollected;
+        return crystalCollected;
     }
 
     public float getShieldCooldown() {
-        return this.shieldCooldown;
+        return shieldCooldown;
     }
 
     public float getTeleportCooldown() {
-        return this.teleportCooldown;
+        return teleportCooldown;
     }
 
-    // get hit or not , depend on the shield
     public void getHit() {
         if (shieldActive) {
             shieldHitSound.play();
@@ -142,7 +130,6 @@ public class Player extends GameObject {
         health--;
     }
 
-    // heal if capture the heart
     public void heal() {
         if (health < 5) {
             healSound.play();
@@ -150,35 +137,8 @@ public class Player extends GameObject {
         }
     }
 
-    // capture crystal for level up
     public void collectCrystal() {
         collectSound.play();
         crystalCollected++;
     }
-
-
-    //reset for next level
-    public void reset() {
-        health = 5;
-        crystalCollected = 0;
-        shieldActive = false;
-        shieldTimer = 0;
-        shieldCooldown = 0;
-        teleportCooldown = 0;
-    }
-
-    public void dispose() {
-        runRight.dispose();
-        runLeft.dispose();
-        moveRight.dispose();
-        moveLeft.dispose();
-
-        hitSound.dispose();
-        shieldHitSound.dispose();
-        healSound.dispose();
-        collectSound.dispose();
-        teleportSound.dispose();
-
-    }
-
 }

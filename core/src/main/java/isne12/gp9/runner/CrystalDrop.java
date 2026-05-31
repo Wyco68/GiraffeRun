@@ -1,10 +1,9 @@
 package isne12.gp9.runner;
 
-import com.badlogic.gdx.graphics.Texture;
-
 public class CrystalDrop extends Drop {
-    public CrystalDrop(Texture texture, Main game) {
-        super(texture, game);
+
+    public CrystalDrop(Main game) {
+        super(game);
     }
 
     @Override

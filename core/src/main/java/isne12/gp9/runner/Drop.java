@@ -6,18 +6,27 @@ import com.badlogic.gdx.math.Rectangle;
 
 public abstract class Drop extends GameObject {
 
-    public Drop(Texture texture, Main game) {
-        super(texture, game);
-        sprite.setSize(0.8f, 0.8f);
-        float worldWidth = game.viewport.getWorldWidth();
-        float worldHeight = game.viewport.getWorldHeight();
-        sprite.setPosition(MathUtils.random(0, worldWidth - sprite.getWidth()), worldHeight);
+    protected Drop(Main game) {
+        super(game);
     }
 
-    //Methods used in GameScreen
+    public void init(Texture texture, Main game) {
+        setFrame(texture);
+        speed = game.getMoveSpeed();
+        setDisplaySize(0.8f, 0.8f);
+        float worldWidth = game.viewport.getWorldWidth();
+        float worldHeight = game.viewport.getWorldHeight();
+        sprite.setPosition(MathUtils.random(0, worldWidth - displayWidth), worldHeight);
+        syncRectangle();
+        onInit();
+    }
+
+    protected void onInit() {
+    }
+
     public void update(float delta) {
         sprite.translateY(-speed * delta);
-        rectangle.set(sprite.getX(), sprite.getY(), sprite.getWidth(), sprite.getHeight());
+        syncRectangle();
     }
 
     public boolean overlaps(Rectangle r) {
@@ -25,7 +34,7 @@ public abstract class Drop extends GameObject {
     }
 
     public boolean isOffScreen() {
-        return sprite.getY() < -sprite.getHeight();
+        return sprite.getY() < -displayHeight;
     }
 
     public abstract void onCatch(Player player);

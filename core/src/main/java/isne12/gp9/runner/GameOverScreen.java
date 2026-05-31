@@ -13,12 +13,13 @@ public class GameOverScreen implements Screen {
 
     public GameOverScreen(final Main game) {
         this.game = game;
-        backGround = new Texture(Gdx.files.internal("GameOverScreen.png"));
+        backGround = game.assets.getTexture(Assets.GAME_OVER);
     }
 
     @Override
     public void show() {
-        // Prepare your screen here.
+        game.setState(GameState.GAME_OVER);
+        game.music.play(game.assets.getMusic(Assets.THEME_AUDIO), 0.12f, true);
     }
 
     @Override
@@ -30,12 +31,15 @@ public class GameOverScreen implements Screen {
         game.batch.begin();
         game.batch.draw(backGround, 0, 0, game.viewport.getWorldWidth(), game.viewport.getWorldHeight());
         game.font.draw(game.batch, "Game Over!", 0.5f, 1f);
-        game.font.draw(game.batch, "Enter to Restart", 0.5f, 0.5f);
-
+        game.font.draw(game.batch, "Score: " + game.gameData.getHighScore()
+            + "  Best Level: " + game.gameData.getBestLevel(), 0.5f, 0.75f);
+        game.font.draw(game.batch, "Press SPACE to Restart", 0.5f, 0.5f);
 
         game.batch.end();
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+            game.resetRun();
+            game.music.fadeTo(0.3f, 0.5f);
             game.setScreen(new GameScreen(game));
             dispose();
         }
@@ -44,25 +48,22 @@ public class GameOverScreen implements Screen {
     @Override
     public void resize(int width, int height) {
         game.viewport.update(width, height, true);
+        game.updateFontScale();
     }
 
     @Override
     public void pause() {
-        // Invoked when your application is paused.
     }
 
     @Override
     public void resume() {
-        // Invoked when your application is resumed after pause.
     }
 
     @Override
     public void hide() {
-        // This method is called when another screen replaces this one.
     }
 
     @Override
     public void dispose() {
-        backGround.dispose();
     }
 }

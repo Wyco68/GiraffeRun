@@ -16,12 +16,13 @@ public class FirstScreen implements Screen {
 
     public FirstScreen(final Main game) {
         this.game = game;
-        backGround = new Texture("MenuScreen.png");
+        backGround = game.assets.getTexture(Assets.MENU);
     }
 
     @Override
     public void show() {
-        // Prepare your screen here.
+        game.setState(GameState.MENU);
+        game.music.play(game.assets.getMusic(Assets.THEME_AUDIO), 0.25f, true);
     }
 
     @Override
@@ -32,24 +33,27 @@ public class FirstScreen implements Screen {
 
         game.batch.begin();
         game.batch.draw(backGround, 0, 0, game.viewport.getWorldWidth(), game.viewport.getWorldHeight());
-        float y = 4.5f;      // starting Y position
-        float spacing = 0.6f; // space between lines
+        float y = 4.5f;
+        float spacing = 0.6f;
         game.font.draw(game.batch, "Welcome to GiraffeRun!", 1, y);
         y -= spacing;
-        game.font.draw(game.batch, "S - Move Left", 1, y);
+        game.font.draw(game.batch, "A / Left / S - Move Left", 1, y);
         y -= spacing;
-        game.font.draw(game.batch, "D - Move Right", 1, y);
+        game.font.draw(game.batch, "D / Right - Move Right", 1, y);
         y -= spacing;
         game.font.draw(game.batch, "Right-Click - Activate Shield", 1, y);
         y -= spacing;
         game.font.draw(game.batch, "Use Cursor and Left-Click - Teleport", 1, y);
         y -= spacing;
         game.font.draw(game.batch, "Enter Space to Begin", 1, y);
-
+        y -= spacing;
+        game.font.draw(game.batch, "High Score: " + game.gameData.getHighScore()
+            + "  Best Level: " + game.gameData.getBestLevel(), 1, y);
 
         game.batch.end();
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+            game.music.fadeTo(0.3f, 0.5f);
             game.setScreen(new GameScreen(game));
             dispose();
         }
@@ -58,26 +62,22 @@ public class FirstScreen implements Screen {
     @Override
     public void resize(int width, int height) {
         game.viewport.update(width, height, true);
+        game.updateFontScale();
     }
 
     @Override
     public void pause() {
-        // Invoked when your application is paused.
     }
 
     @Override
     public void resume() {
-        // Invoked when your application is resumed after pause.
     }
 
     @Override
     public void hide() {
-        // This method is called when another screen replaces this one.
     }
 
     @Override
     public void dispose() {
-        // Destroy screen's assets here.
-        backGround.dispose();
     }
 }

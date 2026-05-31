@@ -4,9 +4,13 @@ import com.badlogic.gdx.graphics.Texture;
 
 public class BulletDrop extends Drop {
 
-    public BulletDrop(Texture texture, Main game) {
-        super(texture, game);
-        this.speed *= 2.5f;
+    public BulletDrop(Main game) {
+        super(game);
+    }
+
+    @Override
+    protected void onInit() {
+        speed *= 2.5f;
     }
 
     @Override

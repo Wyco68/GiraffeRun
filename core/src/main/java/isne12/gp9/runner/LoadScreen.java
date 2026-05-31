@@ -13,12 +13,13 @@ public class LoadScreen implements Screen {
 
     public LoadScreen(final Main game) {
         this.game = game;
-        backGround = new Texture(Gdx.files.internal("LoadScreen.png"));
+        backGround = game.assets.getTexture(Assets.LOAD);
     }
 
     @Override
     public void show() {
-        // Prepare your screen here.
+        game.setState(GameState.LEVEL_TRANSITION);
+        game.music.fadeTo(0.2f, 0.5f);
     }
 
     @Override
@@ -42,25 +43,22 @@ public class LoadScreen implements Screen {
     @Override
     public void resize(int width, int height) {
         game.viewport.update(width, height, true);
+        game.updateFontScale();
     }
 
     @Override
     public void pause() {
-        // Invoked when your application is paused.
     }
 
     @Override
     public void resume() {
-        // Invoked when your application is resumed after pause.
     }
 
     @Override
     public void hide() {
-        // This method is called when another screen replaces this one.
     }
 
     @Override
     public void dispose() {
-        backGround.dispose();
     }
 }

@@ -1,0 +1,163 @@
+{
+  "title": "GiraffeRun",
+  "description": "A 2D top-down dodge-and-collect arcade game built with libGDX (Java). The player controls a giraffe character that must avoid falling rockets (bullets) while collecting crystals to advance through 3 progressively harder levels. The game features a shield ability and a teleport ability, full audio feedback, scrolling backgrounds, health management, and a game win / game over flow.",
+  "version": "1.0.0",
+  "packageId": "isne12.gp9.runner",
+  "platform": "Desktop (Windows / macOS / Linux) via LWJGL3",
+  "buildSystem": "Gradle (multi-module: core + lwjgl3)",
+  "javaCompatibility": "Java 8 source / target, runs on JVM 8+",
+  "features": [
+    "3-level progressive difficulty system (bullet spawn probability scales with level)",
+    "Player movement: keyboard left/right (S/D or Arrow keys)",
+    "Shield ability: activated by right-click, 3-second duration, 8-second cooldown, halves movement speed",
+    "Teleport ability: left-click to cursor position, 4-second cooldown",
+    "Falling drop system: BulletDrop (hazard, 2.5× speed), HealthDrop (heal up to max 5 HP), CrystalDrop (collect 5 to win level)",
+    "Scrolling parallax-style background per level (BG1.png, BG2.png, BG3.png)",
+    "Animated player sprite (alternating left/right movement frames at 0.15 s intervals)",
+    "Shield-mode sprite variants (giraffe with shield visual)",
+    "HUD: heart icons (health), crystal count, level number, shield cooldown timer, teleport cooldown timer",
+    "5 distinct sound effects: hit, shield hit, heal, collect crystal, teleport",
+    "Background music loop with 0.3 volume",
+    "Game Over and Game Win screens with replay/continue options",
+    "Loading/transition screen between levels",
+    "FitViewport (8×5 world units) ensuring resolution independence",
+    "VSync + monitor refresh-rate FPS cap",
+    "Cross-platform fat-JAR distribution (Windows / macOS ARM & x64 / Linux x64)",
+    "Optional GraalVM native-image support (disabled by default)"
+  ],
+  "techStack": [
+    "Java 8 (source/target compatibility)",
+    "libGDX 1.13.1 (core game framework: rendering, input, audio, math)",
+    "LWJGL3 backend (OpenGL via LWJGL 3 for desktop window and context)",
+    "Gradle 8.x (multi-module build, task: jar, dist, jarMac, jarLinux, jarWin)",
+    "Construo 1.7.1 (native executable wrapping with embedded JDK)",
+    "Eclipse / IntelliJ IDEA project support (via Gradle plugins)"
+  ],
+  "modules": [
+    {
+      "name": "core",
+      "role": "Platform-agnostic game logic, screens, entities, and assets",
+      "mainPackage": "isne12.gp9.runner"
+    },
+    {
+      "name": "lwjgl3",
+      "role": "Desktop launcher, window configuration, platform bootstrap",
+      "mainClass": "isne12.gp9.runner.lwjgl3.Lwjgl3Launcher"
+    }
+  ],
+  "classHierarchy": {
+    "Application": "Main extends Game",
+    "GameObjects": {
+      "abstract": "GameObject (sprite, rectangle, speed)",
+      "player": "Player extends GameObject",
+      "drops": {
+        "abstract": "Drop extends GameObject",
+        "concrete": ["BulletDrop", "HealthDrop", "CrystalDrop"]
+      }
+    },
+    "Screens": ["FirstScreen", "LoadScreen", "GameScreen", "GameOverScreen", "GameWinScreen"],
+    "Support": ["BackGround", "StartupHelper (macOS JVM fork helper)"]
+  },
+  "architecture": "Single-process desktop application. libGDX provides the game loop (render/update/dispose). The Main class acts as the application controller, sharing SpriteBatch, BitmapFont, FitViewport, and global game state (level, globalSpeed) across all screens. Screens are swapped via Game.setScreen(). Collision detection uses AABB (axis-aligned bounding box via libGDX Rectangle.overlaps). Asset loading is eager (no AssetManager) — all textures and sounds are loaded in screen constructors and disposed in hide()/dispose().",
+  "dataFlow": [
+    "Input (keyboard/mouse) → GameScreen.input() → Player.moveLeft/Right/teleport/activateShield()",
+    "GameScreen.logic() → Drop.update() → Drop.overlaps(player.getRectangle()) → Drop.onCatch(player)",
+    "Player.update() → sprite bounds clamped to viewport → cooldown timers decremented",
+    "BackGround.update() → scrollY offset scrolled by globalSpeed+level → BackGround.render() tiles texture vertically",
+    "Win condition: crystalCollected >= 5 → level++ or GameWinScreen",
+    "Lose condition: health <= 0 → GameOverScreen",
+    "Level transition: GameScreen → LoadScreen (SPACE) → new GameScreen(game) (level already incremented in Main)"
+  ],
+  "assets": {
+    "textures": [
+      "BG1.png, BG2.png, BG3.png (level scrolling backgrounds)",
+      "MenuScreen.png (main menu + win screen background)",
+      "GameOverScreen.png (game over background)",
+      "LoadScreen.png (between-level transition)",
+      "FrontView.png (unused/placeholder giraffe front view)",
+      "backView.png (default player idle texture)",
+      "leftMove.png, rightMove.png (player run animation frames)",
+      "leftMoveShield.png, rightMoveShield.png (player run with shield active)",
+      "rocket.png (BulletDrop sprite)",
+      "heart.png (HealthDrop sprite + HUD health icon)",
+      "crystal.png (CrystalDrop sprite + HUD crystal icon)",
+      "shieldIcon.png (HUD shield cooldown icon)",
+      "teleportIcon.png (HUD teleport cooldown icon)"
+    ],
+    "audio": [
+      "themeAudio.mp3 (looping background music, volume 0.3)",
+      "hitSound.mp3 (player hit by bullet)",
+      "shieldHit.mp3 (bullet blocked by shield)",
+      "healSound.mp3 (health pickup)",
+      "collectSound.mp3 (crystal collected)",
+      "teleportSound.mp3 (teleport used)",
+      "gameOverSound.mp3 (game over jingle)",
+      "gameWinSound.mp3 (level/game win jingle)",
+      "teleportSound.wav (duplicate WAV, appears unused in code - only .mp3 loaded)"
+    ]
+  },
+  "risks": [
+    {
+      "severity": "HIGH",
+      "category": "Resource Management",
+      "description": "No AssetManager used. All textures/sounds are loaded synchronously in constructors. This causes GPU stutters on screen transition and risks memory leaks if screens are re-created without proper disposal."
+    },
+    {
+      "severity": "HIGH",
+      "category": "Memory Leak — Sound Assets",
+      "description": "GameOverScreen and GameWinScreen do not dispose themeAudio, gameWinSound, or gameOverSound. Player sound assets (hitSound, healSound, etc.) have no dispose() call guard against null. GameScreen.dispose() also doesn't call shieldIcon.dispose() or teleportIcon.dispose()."
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "Game State Coupling",
+      "description": "Main.level and Main.globalSpeed are public mutable fields accessed directly from multiple screens. No encapsulation or state machine. Reset logic is fragmented between Player.reset() and GameScreen.reset()."
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "Drop Spawn Balance",
+      "description": "CrystalDrop probability (1 - bulletProb - healthProb) can trend toward 0 at high levels, making the game impossible to win. At level 3: bulletProb = 0.65, healthProb = 0.16 → crystal chance = 0.19."
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "Background Scrolling Math",
+      "description": "BackGround uses screen pixel height to convert texture height to world units. If window is resized, pixelToWorldY ratio changes but the scroll offset is not recalculated, potentially causing a visual tear or gap."
+    },
+    {
+      "severity": "LOW",
+      "category": "Input Inconsistency",
+      "description": "Move-left is mapped to S key (instead of A), which deviates from standard WASD and is inconsistent with move-right mapped to D. Arrow keys are also supported for right but not left (LEFT arrow maps to same branch as S)."
+    },
+    {
+      "severity": "LOW",
+      "category": "GameWinScreen Asset",
+      "description": "GameWinScreen reuses MenuScreen.png as background instead of a dedicated win screen — a placeholder that reduces production quality."
+    },
+    {
+      "severity": "LOW",
+      "category": "Unused Asset",
+      "description": "FrontView.png and teleportSound.wav are in assets but never loaded/used in code. Adds unnecessary build artifact size."
+    },
+    {
+      "severity": "LOW",
+      "category": "Font Scaling",
+      "description": "BitmapFont is scaled using setScale() tied to viewport size. At very large resolutions the default BitmapFont becomes blurry. A distance-field font or FreeType font would be more scalable."
+    }
+  ],
+  "improvements": [
+    "Introduce libGDX AssetManager for async background loading with a real loading screen progress bar",
+    "Add a dedicated GameState enum or state machine in Main to replace raw mutable fields",
+    "Implement a high-score / persistent save system using libGDX Preferences API",
+    "Add pause screen (ESC key) with resume/restart/quit options",
+    "Replace default BitmapFont with FreeType-generated or distance-field font for crisp text at all resolutions",
+    "Add a dedicated GameWinScreen background texture rather than reusing MenuScreen.png",
+    "Remap move-left to A key for standard WASD compliance; update FirstScreen instructions",
+    "Implement object pooling (libGDX Pool<Drop>) for drop entities to reduce GC pressure at high spawn rates",
+    "Refactor Player.dispose() to guard against already-disposed assets and call it in GameScreen.dispose()",
+    "Add shieldIcon and teleportIcon disposal in GameScreen.dispose()",
+    "Clamp crystal probability to a minimum (e.g., 0.15) to guarantee game is always winnable",
+    "Add music crossfade or per-screen music tracks (GameOverScreen is silent)",
+    "Support controller input via libGDX controller extension for broader accessibility",
+    "Introduce particle effects (libGDX Particles) for crystal collection and teleport visual feedback",
+    "Add Android/iOS modules (libGDX supports both) for mobile publishing"
+  ]
+}
