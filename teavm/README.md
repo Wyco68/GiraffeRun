@@ -41,7 +41,7 @@ Output: `teavm/build/dist/webapp/`
 
 Open **http://localhost:8080**
 
-The game canvas uses **75%** of the browser viewport (centered on a black background). Change `WebLauncher.VIEWPORT_SCALE` to adjust.
+The game canvas uses the full browser window by default (`WebLauncher.VIEWPORT_SCALE = 1`). Lower the value (e.g. `0.75`) to letterbox inside the page. UI is clamped to safe margins via `UiBounds`.
 
 ### Windows: "Unable to delete … backend-web-1.5.6.jar"
 

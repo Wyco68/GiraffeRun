@@ -9,8 +9,8 @@ import isne12.gp9.runner.Main;
  */
 public class WebLauncher {
 
-    /** Fraction of the browser viewport used for the game canvas (width and height). */
-    public static final float VIEWPORT_SCALE = 0.75f;
+    /** Fraction of the browser viewport used for the game canvas (1 = full window). */
+    public static final float VIEWPORT_SCALE = 1f;
 
     public static void main(String[] args) {
         System.setProperty("girafferun.web.viewportScale", Float.toString(VIEWPORT_SCALE));

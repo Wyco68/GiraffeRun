@@ -7,6 +7,11 @@ import com.badlogic.gdx.math.Vector2;
 
 public class Player extends GameObject {
 
+    public static final int MAX_HEALTH = 5;
+    public static final int CRYSTALS_TO_WIN = 5;
+    public static final float SHIELD_COOLDOWN_MAX = 8f;
+    public static final float TELEPORT_COOLDOWN_MAX = 4f;
+
     private int health;
     private int crystalCollected;
 
@@ -35,7 +40,7 @@ public class Player extends GameObject {
         sprite.setY(0f);
         syncRectangle();
 
-        health = 5;
+        health = MAX_HEALTH;
 
         runRight = assets.getTexture(Assets.RUN_RIGHT);
         runLeft = assets.getTexture(Assets.RUN_LEFT);
@@ -65,7 +70,7 @@ public class Player extends GameObject {
         sprite.setX(MathUtils.clamp(touchPos.x - displayWidth / 2f, 0,
             game.viewport.getWorldWidth() - displayWidth));
         syncRectangle();
-        teleportCooldown = 4f;
+        teleportCooldown = TELEPORT_COOLDOWN_MAX;
         return true;
     }
 
@@ -73,7 +78,7 @@ public class Player extends GameObject {
         if (shieldCooldown <= 0 && !shieldActive) {
             shieldActive = true;
             shieldTimer = 3f;
-            shieldCooldown = 8f;
+            shieldCooldown = SHIELD_COOLDOWN_MAX;
             speed /= 2f;
         }
     }
@@ -131,7 +136,7 @@ public class Player extends GameObject {
     }
 
     public void heal() {
-        if (health < 5) {
+        if (health < MAX_HEALTH) {
             healSound.play();
             health++;
         }

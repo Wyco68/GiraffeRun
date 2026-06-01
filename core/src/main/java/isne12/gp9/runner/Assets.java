@@ -14,6 +14,7 @@ public class Assets implements Disposable {
     public static final String BG1 = "BG1.png";
     public static final String BG2 = "BG2.png";
     public static final String BG3 = "BG3.png";
+    public static final String BG4 = "BG4.png";
     public static final String MENU = "MenuScreen.png";
     public static final String LOAD = "LoadScreen.png";
     public static final String GAME_OVER = "GameOverScreen.png";
@@ -49,7 +50,7 @@ public class Assets implements Disposable {
     public static final String THEME_AUDIO = "themeAudio.mp3";
 
     private static final String[] TEXTURES = {
-        BG1, BG2, BG3, MENU, LOAD, GAME_OVER, GAME_WIN,
+        BG1, BG2, BG3, BG4, MENU, LOAD, GAME_OVER, GAME_WIN,
         BACK_VIEW, RUN_RIGHT, RUN_LEFT, SHIELD_RIGHT, SHIELD_LEFT,
         ROCKET, HEART, CRYSTAL, SHIELD_ICON, TELEPORT_ICON,
         UI_ICON_SETTINGS, UI_ICON_SETTINGS_PRESSED,
@@ -114,6 +115,8 @@ public class Assets implements Disposable {
                 return BG2;
             case 3:
                 return BG3;
+            case 4:
+                return BG4;
             default:
                 return BG1;
         }

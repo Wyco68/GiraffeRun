@@ -30,7 +30,8 @@ public class LoadScreen implements Screen {
         float y = h * 0.5f;
         y -= MenuText.lineHeight(game, McUi.TITLE_MULT) + gap;
         y -= MenuText.lineHeight(game, McUi.SUBTITLE_MULT) + gap;
-        continueButton.set(cx - btnW / 2f, y - btnH, btnW, btnH, "CONTINUE");
+        float btnY = UiBounds.clampY(y - btnH, btnH, h);
+        continueButton.set(UiBounds.clampX(cx - btnW / 2f, btnW, w, h), btnY, btnW, btnH, "CONTINUE");
     }
 
     @Override

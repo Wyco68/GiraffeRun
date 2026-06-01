@@ -7,7 +7,6 @@ import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
@@ -32,14 +31,14 @@ public class GameScreen implements Screen {
     EffectManager effects;
     float dropTimer;
 
-    Texture heartIcon;
-    Texture crystalIcon;
     Texture shieldIcon;
     Texture teleportIcon;
+    Texture crystalIcon;
+
+    HUDManager hudManager;
 
     boolean gameEnded;
     boolean paused;
-    ShapeRenderer shapeRenderer;
 
     private final McButton resumeButton = new McButton();
     private final McButton retryButton = new McButton();
@@ -47,7 +46,6 @@ public class GameScreen implements Screen {
 
     public GameScreen(final Main game) {
         this.game = game;
-        shapeRenderer = new ShapeRenderer();
 
         Assets assets = game.assets;
         backGround = new BackGround(assets.getTexture(assets.getLevelBackgroundPath(game.getLevel())));
@@ -65,10 +63,11 @@ public class GameScreen implements Screen {
         dropPools = new DropPools(game, bulletTexture, healthTexture, crystalTexture);
         effects = new EffectManager(game.whitePixel);
 
-        heartIcon = assets.getTexture(Assets.HEART);
         crystalIcon = assets.getTexture(Assets.CRYSTAL);
         shieldIcon = assets.getTexture(Assets.SHIELD_ICON);
         teleportIcon = assets.getTexture(Assets.TELEPORT_ICON);
+        hudManager = new HUDManager(shieldIcon, teleportIcon, crystalIcon, game.whitePixel);
+        hudManager.reset();
     }
 
     @Override
@@ -145,11 +144,14 @@ public class GameScreen implements Screen {
 
         float y = h * 0.56f;
         y -= MenuText.lineHeight(game, McUi.TITLE_MULT) + gap * 1.5f;
-        resumeButton.set(cx - btnW / 2f, y, btnW, btnH, "RESUME");
-        y -= btnH + gap * 0.6f;
-        retryButton.set(cx - btnW / 2f, y, btnW, btnH, "RETRY");
-        y -= btnH + gap * 0.6f;
-        menuButton.set(cx - btnW / 2f, y, btnW, btnH, "MENU");
+        float btnY = UiBounds.clampY(y, btnH, h);
+        resumeButton.set(UiBounds.clampX(cx - btnW / 2f, btnW, w, h), btnY, btnW, btnH, "RESUME");
+        y = btnY - btnH - gap * 0.6f;
+        btnY = UiBounds.clampY(y, btnH, h);
+        retryButton.set(UiBounds.clampX(cx - btnW / 2f, btnW, w, h), btnY, btnW, btnH, "RETRY");
+        y = btnY - btnH - gap * 0.6f;
+        btnY = UiBounds.clampY(y, btnH, h);
+        menuButton.set(UiBounds.clampX(cx - btnW / 2f, btnW, w, h), btnY, btnW, btnH, "MENU");
     }
 
     private void handlePauseInput() {
@@ -187,6 +189,7 @@ public class GameScreen implements Screen {
         backGround.update(delta, worldHeight, game);
         player.update(delta);
         effects.update(delta);
+        hudManager.update(delta, player);
 
         for (int i = drops.size - 1; i >= 0; i--) {
             Drop drop = drops.get(i);
@@ -208,12 +211,13 @@ public class GameScreen implements Screen {
         }
 
         dropTimer += delta;
-        if (dropTimer > 1f) {
+        LevelConfig config = LevelConfig.forLevel(game.getLevel());
+        if (dropTimer >= config.spawnInterval) {
             dropTimer = 0;
-            createDrop();
+            createDrop(config);
         }
 
-        if (player.getCrystalCollected() >= 5) {
+        if (player.getCrystalCollected() >= Player.CRYSTALS_TO_WIN) {
             endGame(true);
         } else if (player.getHealth() <= 0) {
             endGame(false);
@@ -226,8 +230,8 @@ public class GameScreen implements Screen {
 
         if (won) {
             gameWinSound.play();
-            if (game.getLevel() >= 3) {
-                game.gameData.recordRun(3, player.getCrystalCollected());
+            if (game.getLevel() >= game.getMaxLevel()) {
+                game.gameData.recordRun(game.getMaxLevel(), player.getCrystalCollected());
                 game.resetRun();
                 game.setState(GameState.GAME_WIN);
                 game.setScreen(new GameWinScreen(game));
@@ -245,13 +249,13 @@ public class GameScreen implements Screen {
         }
     }
 
-    private void createDrop() {
+    private void createDrop(LevelConfig config) {
         float p = MathUtils.random();
         Drop drop;
 
-        float bulletProb = Math.min(0.5f + game.getLevel() * 0.05f, 0.9f);
-        float healthProb = Math.min(0.1f + game.getLevel() * 0.02f, 0.35f);
-        float crystalProb = Math.max(0.15f, 1f - bulletProb - healthProb);
+        float bulletProb = Math.min(config.bulletWeight, 0.92f);
+        float healthProb = Math.min(config.healthWeight, 0.35f);
+        float crystalProb = Math.max(0.12f, 1f - bulletProb - healthProb);
         float scale = 1f - crystalProb;
         bulletProb *= scale;
         healthProb *= scale;
@@ -260,54 +264,14 @@ public class GameScreen implements Screen {
         else if (p < bulletProb + healthProb) drop = dropPools.obtainHealth();
         else drop = dropPools.obtainCrystal();
 
+        drop.applySpeedMultiplier(config.dropSpeedMultiplier);
         drops.add(drop);
-    }
-
-    private void drawHud() {
-        float worldWidth = game.viewport.getWorldWidth();
-        float worldHeight = game.viewport.getWorldHeight();
-        float iconSize = 0.4f;
-        float padding = 0.1f;
-        float topY = worldHeight - padding;
-
-        for (int i = 0; i < player.getHealth(); i++) {
-            game.batch.draw(heartIcon, padding + i * (iconSize + 0.05f), topY - iconSize, iconSize, iconSize);
-        }
-
-        float crystalRowY = topY - iconSize;
-        float crystalIconX = worldWidth - padding - iconSize;
-        String crystalCount = player.getCrystalCollected() + "/5";
-        game.font.draw(game.batch, crystalCount, crystalIconX - 0.6f, crystalRowY + iconSize * 0.72f);
-        game.batch.draw(crystalIcon, crystalIconX, crystalRowY, iconSize, iconSize);
-
-        game.font.draw(game.batch, "Level: " + game.getLevel(), worldWidth - padding - 1.1f, crystalRowY - 0.15f);
-
-        float cooldownIconSize = 0.8f;
-        float cooldownY = crystalRowY - iconSize - 0.25f;
-
-        game.batch.draw(shieldIcon, padding, cooldownY, cooldownIconSize, cooldownIconSize);
-        if (player.getShieldCooldown() > 0) {
-            String shieldText = "" + Math.round(player.getShieldCooldown() * 10) / 10f;
-            game.font.draw(game.batch, shieldText,
-                padding + cooldownIconSize / 4f,
-                cooldownY + cooldownIconSize / 1.5f);
-        }
-
-        float teleportX = padding + cooldownIconSize + 0.1f;
-        game.batch.draw(teleportIcon, teleportX, cooldownY, cooldownIconSize, cooldownIconSize);
-        if (player.getTeleportCooldown() > 0) {
-            String teleportText = "" + Math.round(player.getTeleportCooldown() * 10) / 10f;
-            game.font.draw(game.batch, teleportText,
-                teleportX + cooldownIconSize / 4f,
-                cooldownY + cooldownIconSize / 1.5f);
-        }
     }
 
     private void drawWorld() {
         float worldWidth = game.viewport.getWorldWidth();
         float worldHeight = game.viewport.getWorldHeight();
         backGround.render(game.batch, worldWidth, worldHeight);
-        drawHud();
         player.draw(game.batch);
 
         for (Drop drop : drops) {
@@ -322,11 +286,11 @@ public class GameScreen implements Screen {
         game.viewport.apply();
         game.updateHudFontScale();
         game.batch.setProjectionMatrix(game.viewport.getCamera().combined);
-        game.font.setColor(0f, 0.8f, 0.9f, 1f);
 
         game.batch.begin();
         game.batch.setColor(Color.WHITE);
         drawWorld();
+        hudManager.draw(game.batch, game, player);
         game.batch.end();
     }
 
@@ -339,6 +303,7 @@ public class GameScreen implements Screen {
         game.batch.begin();
         game.batch.setColor(Color.WHITE);
         drawWorld();
+        hudManager.draw(game.batch, game, player);
         game.batch.end();
 
         float w = game.viewport.getWorldWidth();
@@ -402,9 +367,6 @@ public class GameScreen implements Screen {
         }
         if (effects != null) {
             effects.dispose();
-        }
-        if (shapeRenderer != null) {
-            shapeRenderer.dispose();
         }
     }
 }

@@ -33,12 +33,14 @@ public class FirstScreen implements Screen {
         y -= MenuText.lineHeight(game, McUi.TITLE_MULT) + gap;
         y -= MenuText.lineHeight(game, McUi.SUBTITLE_MULT) + gap * 1.5f;
 
-        playButton.set(cx - btnW / 2f, y - btnH, btnW, btnH, "PLAY");
+        float playY = UiBounds.clampY(y - btnH, btnH, h);
+        playButton.set(UiBounds.clampX(cx - btnW / 2f, btnW, w, h), playY, btnW, btnH, "PLAY");
 
         float sndW = w * 0.2f;
         float sndH = btnH * 0.62f;
-        float pad = UiSpacing.small(h);
-        soundButton.set(w - pad - sndW, h - pad - sndH, sndW, sndH,
+        float sndX = UiBounds.clampX(UiBounds.safeRight(w, h) - sndW, sndW, w, h);
+        float sndY = UiBounds.clampY(UiBounds.safeTop(h) - sndH, sndH, h);
+        soundButton.set(sndX, sndY, sndW, sndH,
             game.settings.isMusicEnabled() ? "SOUND" : "MUTE");
     }
 

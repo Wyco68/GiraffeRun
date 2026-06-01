@@ -23,7 +23,8 @@ public class LoadingScreen implements Screen {
         float cx = w / 2f;
         float btnW = w * 0.5f;
         float btnH = Math.max(UiSpacing.touchTarget(h), 0.5f);
-        continueButton.set(cx - btnW / 2f, h * 0.2f, btnW, btnH, "CONTINUE");
+        float btnY = UiBounds.clampY(h * 0.2f, btnH, h);
+        continueButton.set(UiBounds.clampX(cx - btnW / 2f, btnW, w, h), btnY, btnW, btnH, "CONTINUE");
     }
 
     @Override

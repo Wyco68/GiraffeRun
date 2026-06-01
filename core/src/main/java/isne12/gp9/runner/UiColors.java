@@ -12,6 +12,13 @@ public final class UiColors {
     public static final Color ACCENT = new Color(0.2f, 0.95f, 0.85f, 1f);
     public static final Color PANEL_DIM = new Color(0f, 0f, 0f, 0.55f);
 
+    public static final Color HEALTH_FULL = new Color(0.25f, 0.88f, 0.35f, 1f);
+    public static final Color HEALTH_MID = new Color(0.95f, 0.82f, 0.15f, 1f);
+    public static final Color HEALTH_LOW = new Color(0.92f, 0.22f, 0.2f, 1f);
+    public static final Color BAR_BG = new Color(0.08f, 0.1f, 0.12f, 0.85f);
+    public static final Color BAR_EMPTY = new Color(0.2f, 0.24f, 0.28f, 0.9f);
+    public static final Color CRYSTAL_FILL = new Color(0.15f, 0.75f, 0.95f, 1f);
+
     private UiColors() {
     }
 }

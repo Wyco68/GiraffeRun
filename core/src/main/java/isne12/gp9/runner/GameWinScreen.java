@@ -30,7 +30,8 @@ public class GameWinScreen implements Screen {
         float y = h * 0.58f;
         y -= MenuText.lineHeight(game, McUi.TITLE_MULT) + gap;
         y -= MenuText.lineHeight(game, McUi.SUBTITLE_MULT) + gap;
-        retryButton.set(cx - btnW / 2f, y - btnH, btnW, btnH, "PLAY AGAIN");
+        float btnY = UiBounds.clampY(y - btnH, btnH, h);
+        retryButton.set(UiBounds.clampX(cx - btnW / 2f, btnW, w, h), btnY, btnW, btnH, "PLAY AGAIN");
     }
 
     @Override

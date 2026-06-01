@@ -51,11 +51,35 @@ public class Main extends Game {
         settings = new GameSettings();
         updateFontScale();
 
+        enterFullscreenIfSupported();
+        syncViewportToDisplay();
+
+        setScreen(new LoadingScreen(this));
+    }
+
+    /** Desktop: native fullscreen. Web: canvas uses full window (see {@code WebLauncher}). */
+    public void enterFullscreenIfSupported() {
         if (Gdx.app.getType() != Application.ApplicationType.WebGL) {
             Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
         }
+    }
 
-        setScreen(new LoadingScreen(this));
+    public void syncViewportToDisplay() {
+        int w = Gdx.graphics.getWidth();
+        int h = Gdx.graphics.getHeight();
+        if (w > 0 && h > 0) {
+            viewport.update(w, h, true);
+            updateHudFontScale();
+        }
+    }
+
+    @Override
+    public void resize(int width, int height) {
+        if (viewport != null && width > 0 && height > 0) {
+            viewport.update(width, height, true);
+            updateHudFontScale();
+        }
+        super.resize(width, height);
     }
 
     public GameState getState() {
@@ -79,7 +103,11 @@ public class Main extends Game {
     }
 
     public void advanceLevel() {
-        level = Math.min(level + 1, 3);
+        level = Math.min(level + 1, LevelConfig.MAX_LEVEL);
+    }
+
+    public int getMaxLevel() {
+        return LevelConfig.MAX_LEVEL;
     }
 
     public void resetRun() {

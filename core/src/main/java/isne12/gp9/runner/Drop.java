@@ -6,6 +6,9 @@ import com.badlogic.gdx.math.Rectangle;
 
 public abstract class Drop extends GameObject {
 
+    /** Display scale vs legacy 0.8 world units (≈0.6×). */
+    public static final float DISPLAY_SCALE = 0.56f;
+
     protected Drop(Main game) {
         super(game);
     }
@@ -13,7 +16,7 @@ public abstract class Drop extends GameObject {
     public void init(Texture texture, Main game) {
         setFrame(texture);
         speed = game.getMoveSpeed();
-        setDisplaySize(0.8f, 0.8f);
+        setDisplaySize(DISPLAY_SCALE, DISPLAY_SCALE);
         float worldWidth = game.viewport.getWorldWidth();
         float worldHeight = game.viewport.getWorldHeight();
         sprite.setPosition(MathUtils.random(0, worldWidth - displayWidth), worldHeight);
@@ -35,6 +38,10 @@ public abstract class Drop extends GameObject {
 
     public boolean isOffScreen() {
         return sprite.getY() < -displayHeight;
+    }
+
+    public void applySpeedMultiplier(float multiplier) {
+        speed *= multiplier;
     }
 
     public abstract void onCatch(Player player);

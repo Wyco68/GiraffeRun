@@ -22,7 +22,7 @@ public class McButton {
     public void draw(Main game, SpriteBatch batch) {
         float baseline = bounds.y + bounds.height * 0.38f;
         MenuText.drawCentered(game, batch, label, bounds.x + bounds.width / 2f, baseline,
-            McUi.BODY_MULT, pressed ? McStyle.SUBTITLE : McStyle.TEXT);
+            McUi.BODY_MULT, pressed ? McStyle.CLICKABLE_PRESSED : McStyle.CLICKABLE);
     }
 
     public boolean handleClick(Viewport viewport) {

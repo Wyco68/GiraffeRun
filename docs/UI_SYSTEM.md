@@ -46,7 +46,7 @@ Reference height: **480px** (`UiSpacing.REF_PIXEL_HEIGHT`).
 
 Size: **56×56** px, transparent PNG. Loaded via `Assets` + `UiIcons`.
 
-**Unchanged:** `shieldIcon.png`, `teleportIcon.png`, `heart.png`, `crystal.png` (same dimensions and draw sizes in `GameScreen`).
+**Unchanged assets:** `shieldIcon.png`, `teleportIcon.png`, `heart.png`, `crystal.png` (textures only; HUD uses bars + scaled draw rects).
 
 ## Layout structure
 
@@ -54,11 +54,11 @@ Size: **56×56** px, transparent PNG. Loaded via `Assets` + `UiIcons`.
 - Background: `MenuScreen.png` (batch).
 - Scene2D: top-right sound toggle; centered title → subtitle → **PLAY** → controls; bottom stats.
 
-### In-game HUD (`GameScreen`)
-- **Top-left:** hearts (0.4 world units).
-- **Top-right:** crystal count + icon, level label; pause button (Scene2D).
-- **Left column (unchanged sizes):** shield / teleport at 0.8 world units.
-- Center: clear for player and drops.
+### In-game HUD (`GameScreen` + `HUDManager`)
+- **Top-left:** 5-segment red health bar.
+- **Top-right:** shield / teleport icons; cooldown seconds in HUD font (`UiColors.HUD`).
+- **Bottom-right:** compact crystal progress bar (no numeric label).
+- Campaign uses `BG1`–`BG4` per level. Center clear for player/drops.
 
 ### Pause overlay
 - Dim fill + centered panel (`UiFactory.dimPanel`).
