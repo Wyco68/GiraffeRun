@@ -108,14 +108,15 @@ public final class HUDManager {
     }
 
     private void drawCrystalBar(SpriteBatch batch, float w, float h) {
-        float pad = UiBounds.margin(h);
         float barH = UiSpacing.pxToWorld(6f, h);
         float barW = UiSpacing.pxToWorld(64f, h);
         float icon = barH * 1.2f;
         float iconGap = UiSpacing.pxToWorld(2f, h);
         float groupW = barW + icon + iconGap;
-        float x = UiBounds.rightAlignGroup(w, h, groupW);
-        float y = UiBounds.safeBottom(h);
+        float x = (w - groupW) / 2f;
+        float top = UiBounds.safeTop(h);
+        float y = top - icon - UiSpacing.small(h);
+        y = UiBounds.clampY(y, icon, h);
 
         Color old = batch.getColor().cpy();
         batch.setColor(UiColors.BAR_BG);

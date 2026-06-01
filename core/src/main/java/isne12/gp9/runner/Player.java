@@ -126,6 +126,18 @@ public class Player extends GameObject {
         return teleportCooldown;
     }
 
+    public boolean canActivateShield() {
+        return shieldCooldown <= 0f && !shieldActive;
+    }
+
+    /** Remaining cooldown fraction in [0, 1]; 0 when ready. */
+    public float getShieldCooldownRatio() {
+        if (shieldCooldown <= 0f) {
+            return 0f;
+        }
+        return MathUtils.clamp(shieldCooldown / SHIELD_COOLDOWN_MAX, 0f, 1f);
+    }
+
     public void getHit() {
         if (shieldActive) {
             shieldHitSound.play();

@@ -2,6 +2,8 @@ package isne12.gp9.runner;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
@@ -36,6 +38,8 @@ public class GameScreen implements Screen {
     Texture crystalIcon;
 
     HUDManager hudManager;
+    TouchControlsOverlay touchControls;
+    InputMultiplexer gameplayInput;
 
     boolean gameEnded;
     boolean paused;
@@ -68,6 +72,10 @@ public class GameScreen implements Screen {
         teleportIcon = assets.getTexture(Assets.TELEPORT_ICON);
         hudManager = new HUDManager(shieldIcon, teleportIcon, crystalIcon, game.whitePixel);
         hudManager.reset();
+
+        touchControls = new TouchControlsOverlay(game, player, this::openPause);
+        gameplayInput = new InputMultiplexer(touchControls, new GameplayTouchListener());
+        touchControls.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
     }
 
     @Override
@@ -75,6 +83,16 @@ public class GameScreen implements Screen {
         game.setState(GameState.PLAYING);
         game.music.setEnabled(game.settings.isMusicEnabled());
         game.music.play(themeAudio, 0.3f, true);
+        setupGameplayInput();
+    }
+
+    private void setupGameplayInput() {
+        touchControls.setVisible(true);
+        Gdx.input.setInputProcessor(gameplayInput);
+    }
+
+    private void clearGameplayInput() {
+        touchControls.setVisible(false);
         Gdx.input.setInputProcessor(null);
     }
 
@@ -95,7 +113,7 @@ public class GameScreen implements Screen {
         if (backGround == null) {
             return;
         }
-        draw();
+        draw(delta);
     }
 
     private void input(float delta) {
@@ -104,9 +122,13 @@ public class GameScreen implements Screen {
             return;
         }
 
-        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D)) {
+        boolean moveRight = Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D)
+            || touchControls.isMovingRight();
+        boolean moveLeft = Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A)
+            || touchControls.isMovingLeft();
+        if (moveRight) {
             player.moveRight(delta);
-        } else if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A)) {
+        } else if (moveLeft) {
             player.moveLeft(delta);
         }
 
@@ -114,15 +136,29 @@ public class GameScreen implements Screen {
             || Gdx.input.isButtonJustPressed(Input.Buttons.RIGHT)) {
             player.activateShield();
         }
+    }
 
-        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
-            touchPos.set(Gdx.input.getX(), Gdx.input.getY());
-            game.viewport.unproject(touchPos);
-            float fromX = player.getCenterX();
-            float fromY = player.getCenterY();
-            if (player.tryTeleport(touchPos)) {
-                effects.spawnTeleport(fromX, fromY, player.getCenterX(), player.getCenterY());
+    private void tryTeleportAt(Vector2 worldPos) {
+        float fromX = player.getCenterX();
+        float fromY = player.getCenterY();
+        if (player.tryTeleport(worldPos)) {
+            effects.spawnTeleport(fromX, fromY, player.getCenterX(), player.getCenterY());
+        }
+    }
+
+    private final class GameplayTouchListener extends InputAdapter {
+        @Override
+        public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+            if (paused || gameEnded || pointer > 0) {
+                return false;
             }
+            touchPos.set(screenX, screenY);
+            game.viewport.unproject(touchPos);
+            if (touchControls.blocksTeleport(touchPos.x, touchPos.y)) {
+                return false;
+            }
+            tryTeleportAt(touchPos);
+            return false;
         }
     }
 
@@ -130,6 +166,7 @@ public class GameScreen implements Screen {
         paused = true;
         game.setState(GameState.PAUSED);
         game.music.pause();
+        clearGameplayInput();
         layoutPauseUi();
     }
 
@@ -177,6 +214,7 @@ public class GameScreen implements Screen {
         paused = false;
         game.setState(GameState.PLAYING);
         game.music.resume();
+        setupGameplayInput();
     }
 
     private void logic(float delta) {
@@ -226,6 +264,7 @@ public class GameScreen implements Screen {
 
     private void endGame(boolean won) {
         gameEnded = true;
+        touchControls.setVisible(false);
         game.music.fadeTo(0f, 0.5f);
 
         if (won) {
@@ -281,7 +320,7 @@ public class GameScreen implements Screen {
         effects.draw(game.batch);
     }
 
-    private void draw() {
+    private void draw(float delta) {
         ScreenUtils.clear(Color.BLACK);
         game.viewport.apply();
         game.updateHudFontScale();
@@ -291,6 +330,7 @@ public class GameScreen implements Screen {
         game.batch.setColor(Color.WHITE);
         drawWorld();
         hudManager.draw(game.batch, game, player);
+        touchControls.draw(game.batch);
         game.batch.end();
     }
 
@@ -335,6 +375,9 @@ public class GameScreen implements Screen {
     public void resize(int width, int height) {
         game.viewport.update(width, height, true);
         game.updateHudFontScale();
+        if (touchControls != null) {
+            touchControls.resize(width, height);
+        }
         if (paused) {
             layoutPauseUi();
         }
@@ -367,6 +410,9 @@ public class GameScreen implements Screen {
         }
         if (effects != null) {
             effects.dispose();
+        }
+        if (touchControls != null) {
+            touchControls.dispose();
         }
     }
 }

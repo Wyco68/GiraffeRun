@@ -5,6 +5,9 @@ import com.badlogic.gdx.graphics.Color;
 public final class McStyle {
     public static final Color BUTTON_FACE = new Color(0.62f, 0.62f, 0.62f, 1f);
     public static final Color BUTTON_FACE_PRESSED = new Color(0.45f, 0.45f, 0.45f, 1f);
+    /** Shield skill touch button (neutral gray). */
+    public static final Color SHIELD_FACE = new Color(0.52f, 0.52f, 0.55f, 1f);
+    public static final Color SHIELD_FACE_PRESSED = new Color(0.38f, 0.38f, 0.42f, 1f);
     public static final Color BORDER_LIGHT = new Color(1f, 1f, 1f, 1f);
     public static final Color BORDER_DARK = new Color(0.22f, 0.22f, 0.22f, 1f);
     public static final Color TEXT = new Color(1f, 1f, 1f, 1f);

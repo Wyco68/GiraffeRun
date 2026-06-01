@@ -57,8 +57,17 @@ Size: **56×56** px, transparent PNG. Loaded via `Assets` + `UiIcons`.
 ### In-game HUD (`GameScreen` + `HUDManager`)
 - **Top-left:** 5-segment red health bar.
 - **Top-right:** shield / teleport icons; cooldown seconds in HUD font (`UiColors.HUD`).
-- **Bottom-right:** compact crystal progress bar (no numeric label).
+- **Top-center:** compact crystal progress bar (no numeric label).
 - Campaign uses `BG1`–`BG4` per level. Center clear for player/drops.
+
+### In-game touch controls (`TouchControlsOverlay` on `GameScreen`)
+- **Bottom-left:** hold **&lt;** / **&gt;** for movement.
+- **Bottom-right:** gray shield button (cooldown overlay).
+- **Top-left (under health bar):** **||** pause button.
+- Drawn on the gameplay `SpriteBatch` (same path as HUD), not a separate Scene2D stage.
+- **Playfield tap:** teleport via second `InputMultiplexer` processor when touch misses buttons.
+- Keyboard/mouse unchanged: A/D, S, right-click shield, Esc pause.
+- Hidden while paused or game ended.
 
 ### Pause overlay
 - Dim fill + centered panel (`UiFactory.dimPanel`).

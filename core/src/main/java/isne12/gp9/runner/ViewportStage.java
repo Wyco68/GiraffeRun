@@ -20,5 +20,6 @@ public class ViewportStage extends Stage {
 
     public void resize(int screenWidth, int screenHeight) {
         fitViewport.update(screenWidth, screenHeight, true);
+        getRoot().setBounds(0f, 0f, fitViewport.getWorldWidth(), fitViewport.getWorldHeight());
     }
 }

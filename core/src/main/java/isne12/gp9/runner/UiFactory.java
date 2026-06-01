@@ -4,9 +4,13 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
@@ -43,6 +47,88 @@ public final class UiFactory {
     public static void sizeTouchIcon(ImageButton button, float worldHeight) {
         float size = Math.max(UiSpacing.iconSize(worldHeight), UiSpacing.touchTarget(worldHeight));
         button.setSize(size, size);
+    }
+
+    public static float touchButtonSize(float worldHeight) {
+        float min = UiSpacing.pxToWorld(64f, worldHeight);
+        float max = UiSpacing.pxToWorld(96f, worldHeight);
+        float preferred = UiSpacing.pxToWorld(80f, worldHeight);
+        return com.badlogic.gdx.math.MathUtils.clamp(preferred, min, max);
+    }
+
+    public static ImageButton.ImageButtonStyle textureButtonStyle(Texture up, Texture down) {
+        ImageButton.ImageButtonStyle style = new ImageButton.ImageButtonStyle();
+        style.imageUp = new TextureRegionDrawable(new TextureRegion(up));
+        style.imageOver = style.imageUp;
+        Texture pressed = down != null ? down : up;
+        style.imageDown = new TextureRegionDrawable(new TextureRegion(pressed));
+        return style;
+    }
+
+    public static ImageButton textureImageButton(Texture up, Texture down) {
+        return new ImageButton(textureButtonStyle(up, down));
+    }
+
+    public static InputListener holdListener(Runnable onDown, Runnable onUp) {
+        return new InputListener() {
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                onDown.run();
+                return true;
+            }
+
+            @Override
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                onUp.run();
+            }
+
+            @Override
+            public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
+                onUp.run();
+            }
+        };
+    }
+
+    public static ImageButton holdButton(Texture up, Texture down, Runnable onDown, Runnable onUp) {
+        ImageButton button = textureImageButton(up, down);
+        button.addListener(holdListener(onDown, onUp));
+        return button;
+    }
+
+    public static ImageButton clickButton(Texture up, Texture down, Runnable onClick) {
+        ImageButton button = textureImageButton(up, down);
+        button.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                onClick.run();
+            }
+        });
+        return button;
+    }
+
+    /** Button with a cooldown fill overlay child (ImageButton or {@link McStoneButton}). */
+    public static Stack cooldownButtonStack(com.badlogic.gdx.scenes.scene2d.Actor button, Texture whitePixel) {
+        Stack stack = new Stack();
+        stack.add(button);
+        Image overlay = new Image(new TextureRegionDrawable(new TextureRegion(whitePixel)));
+        overlay.setVisible(false);
+        overlay.setColor(0f, 0f, 0f, 0.45f);
+        stack.add(overlay);
+        stack.setUserObject(overlay);
+        return stack;
+    }
+
+    public static void updateCooldownOverlay(Stack stack, float cooldownRatio) {
+        Image overlay = (Image) stack.getUserObject();
+        com.badlogic.gdx.scenes.scene2d.Actor button = stack.getChild(0);
+        boolean onCooldown = cooldownRatio > 0.001f;
+        button.setColor(1f, 1f, 1f, onCooldown ? 0.45f : 1f);
+        overlay.setVisible(onCooldown);
+        if (onCooldown) {
+            float h = button.getHeight();
+            overlay.setHeight(h * cooldownRatio);
+            overlay.setY(0f);
+        }
     }
 
     /**

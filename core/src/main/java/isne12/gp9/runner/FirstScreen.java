@@ -78,7 +78,8 @@ public class FirstScreen implements Screen {
         soundButton.draw(game, game.batch);
 
         float hintsY = playButton.getBounds().y - gap;
-        hintsY = McUi.drawHint(game, game.batch, "A/D move  S shield  Click teleport", cx, hintsY);
+        hintsY = McUi.drawHint(game, game.batch,
+            "A/D move  S shield  Tap field to teleport  On-screen buttons on mobile", cx, hintsY);
         McUi.drawHint(game, game.batch,
             "High " + game.gameData.getHighScore() + "  Best Lv " + game.gameData.getBestLevel(),
             cx, hintsY - gap * 0.5f);

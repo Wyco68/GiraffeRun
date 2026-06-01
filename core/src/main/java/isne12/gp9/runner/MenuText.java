@@ -3,6 +3,7 @@ package isne12.gp9.runner;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 /**
@@ -27,7 +28,7 @@ public final class MenuText {
         return h;
     }
 
-    public static void drawCentered(Main game, SpriteBatch batch, String text,
+    public static void drawCentered(Main game, Batch batch, String text,
                                     float centerX, float baselineY, float multiplier, Color color) {
         BitmapFont font = game.font;
         font.setUseIntegerPositions(false);
