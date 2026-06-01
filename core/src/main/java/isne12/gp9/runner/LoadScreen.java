@@ -10,16 +10,34 @@ import com.badlogic.gdx.utils.ScreenUtils;
 public class LoadScreen implements Screen {
     final Main game;
     Texture backGround;
+    private final McButton continueButton = new McButton();
 
     public LoadScreen(final Main game) {
         this.game = game;
         backGround = game.assets.getTexture(Assets.LOAD);
+        layoutUi();
+    }
+
+    private void layoutUi() {
+        game.updateMenuFontScale();
+        float w = game.viewport.getWorldWidth();
+        float h = game.viewport.getWorldHeight();
+        float cx = w / 2f;
+        float gap = UiSpacing.medium(h);
+        float btnW = w * 0.48f;
+        float btnH = Math.max(UiSpacing.touchTarget(h), 0.5f);
+
+        float y = h * 0.5f;
+        y -= MenuText.lineHeight(game, McUi.TITLE_MULT) + gap;
+        y -= MenuText.lineHeight(game, McUi.SUBTITLE_MULT) + gap;
+        continueButton.set(cx - btnW / 2f, y - btnH, btnW, btnH, "CONTINUE");
     }
 
     @Override
     public void show() {
         game.setState(GameState.LEVEL_TRANSITION);
         game.music.fadeTo(0.2f, 0.5f);
+        Gdx.input.setInputProcessor(null);
     }
 
     @Override
@@ -27,14 +45,29 @@ public class LoadScreen implements Screen {
         ScreenUtils.clear(Color.BLACK);
         game.viewport.apply();
         game.batch.setProjectionMatrix(game.viewport.getCamera().combined);
+        game.updateMenuFontScale();
+
+        float w = game.viewport.getWorldWidth();
+        float h = game.viewport.getWorldHeight();
+        float cx = w / 2f;
+        float gap = UiSpacing.medium(h);
 
         game.batch.begin();
-        game.batch.draw(backGround, 0, 0, game.viewport.getWorldWidth(), game.viewport.getWorldHeight());
-        game.font.draw(game.batch, "Alright, lets move on to next level!", 0.5f, 1);
+        game.batch.setColor(Color.WHITE);
+        game.batch.draw(backGround, 0, 0, w, h);
+        UiBatch.drawDimFullscreen(game.batch, game.whitePixel, w, h);
 
+        float y = h * 0.62f;
+        y = McUi.drawTitle(game, game.batch, "Level " + game.getLevel(), cx, y);
+        y -= gap;
+        McUi.drawSubtitle(game, game.batch, "Get ready!", cx, y);
+        continueButton.draw(game, game.batch);
         game.batch.end();
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+        continueButton.clearPressed();
+        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)
+            || Gdx.input.isKeyJustPressed(Input.Keys.ENTER)
+            || continueButton.handleClick(game.viewport)) {
             game.setScreen(new GameScreen(game));
             dispose();
         }
@@ -43,7 +76,8 @@ public class LoadScreen implements Screen {
     @Override
     public void resize(int width, int height) {
         game.viewport.update(width, height, true);
-        game.updateFontScale();
+        game.updateMenuFontScale();
+        layoutUi();
     }
 
     @Override

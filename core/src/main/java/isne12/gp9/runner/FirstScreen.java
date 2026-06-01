@@ -7,22 +7,47 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.utils.ScreenUtils;
 
-/**
- * First screen of the application. Displayed after the application is created.
- */
 public class FirstScreen implements Screen {
     final Main game;
     Texture backGround;
 
+    private final McButton playButton = new McButton();
+    private final McButton soundButton = new McButton();
+
     public FirstScreen(final Main game) {
         this.game = game;
         backGround = game.assets.getTexture(Assets.MENU);
+        layoutUi();
+    }
+
+    private void layoutUi() {
+        game.updateMenuFontScale();
+        float w = game.viewport.getWorldWidth();
+        float h = game.viewport.getWorldHeight();
+        float cx = w / 2f;
+        float gap = UiSpacing.medium(h);
+        float btnW = w * 0.48f;
+        float btnH = Math.max(UiSpacing.touchTarget(h), 0.5f);
+
+        float y = h - UiSpacing.large(h);
+        y -= MenuText.lineHeight(game, McUi.TITLE_MULT) + gap;
+        y -= MenuText.lineHeight(game, McUi.SUBTITLE_MULT) + gap * 1.5f;
+
+        playButton.set(cx - btnW / 2f, y - btnH, btnW, btnH, "PLAY");
+
+        float sndW = w * 0.2f;
+        float sndH = btnH * 0.62f;
+        float pad = UiSpacing.small(h);
+        soundButton.set(w - pad - sndW, h - pad - sndH, sndW, sndH,
+            game.settings.isMusicEnabled() ? "SOUND" : "MUTE");
     }
 
     @Override
     public void show() {
         game.setState(GameState.MENU);
+        game.music.setEnabled(game.settings.isMusicEnabled());
         game.music.play(game.assets.getMusic(Assets.THEME_AUDIO), 0.25f, true);
+        Gdx.input.setInputProcessor(null);
     }
 
     @Override
@@ -30,39 +55,56 @@ public class FirstScreen implements Screen {
         ScreenUtils.clear(Color.BLACK);
         game.viewport.apply();
         game.batch.setProjectionMatrix(game.viewport.getCamera().combined);
+        game.updateMenuFontScale();
+
+        float w = game.viewport.getWorldWidth();
+        float h = game.viewport.getWorldHeight();
+        float cx = w / 2f;
+        float gap = UiSpacing.medium(h);
 
         game.batch.begin();
-        game.batch.draw(backGround, 0, 0, game.viewport.getWorldWidth(), game.viewport.getWorldHeight());
-        float y = 4.5f;
-        float spacing = 0.6f;
-        game.font.draw(game.batch, "Welcome to GiraffeRun!", 1, y);
-        y -= spacing;
-        game.font.draw(game.batch, "A / Left - Move Left", 1, y);
-        y -= spacing;
-        game.font.draw(game.batch, "D / Right - Move Right", 1, y);
-        y -= spacing;
-        game.font.draw(game.batch, "S / Right-Click - Activate Shield", 1, y);
-        y -= spacing;
-        game.font.draw(game.batch, "Use Cursor and Left-Click - Teleport", 1, y);
-        y -= spacing;
-        game.font.draw(game.batch, "Enter Space to Begin", 1, y);
-        y -= spacing;
-        game.font.draw(game.batch, "High Score: " + game.gameData.getHighScore()
-            + "  Best Level: " + game.gameData.getBestLevel(), 1, y);
+        game.batch.setColor(Color.WHITE);
+        game.batch.draw(backGround, 0, 0, w, h);
 
+        float y = h - UiSpacing.large(h);
+        y = McUi.drawTitle(game, game.batch, "GiraffeRun", cx, y);
+        y -= gap;
+        y = McUi.drawSubtitle(game, game.batch, "Collect 5 crystals per level", cx, y);
+        y -= gap * 1.2f;
+
+        playButton.draw(game, game.batch);
+        soundButton.draw(game, game.batch);
+
+        float hintsY = playButton.getBounds().y - gap;
+        hintsY = McUi.drawHint(game, game.batch, "A/D move  S shield  Click teleport", cx, hintsY);
+        McUi.drawHint(game, game.batch,
+            "High " + game.gameData.getHighScore() + "  Best Lv " + game.gameData.getBestLevel(),
+            cx, hintsY - gap * 0.5f);
         game.batch.end();
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
-            game.music.fadeTo(0.3f, 0.5f);
-            game.setScreen(new GameScreen(game));
-            dispose();
+        playButton.clearPressed();
+        soundButton.clearPressed();
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) || playButton.handleClick(game.viewport)) {
+            beginGame();
+        } else if (soundButton.handleClick(game.viewport)) {
+            game.settings.toggleMusic();
+            game.music.setEnabled(game.settings.isMusicEnabled());
+            layoutUi();
         }
+    }
+
+    private void beginGame() {
+        game.music.fadeTo(0.3f, 0.5f);
+        game.setScreen(new GameScreen(game));
+        dispose();
     }
 
     @Override
     public void resize(int width, int height) {
         game.viewport.update(width, height, true);
-        game.updateFontScale();
+        game.updateMenuFontScale();
+        layoutUi();
     }
 
     @Override

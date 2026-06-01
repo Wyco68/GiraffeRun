@@ -28,6 +28,17 @@ public class Assets implements Disposable {
     public static final String CRYSTAL = "crystal.png";
     public static final String SHIELD_ICON = "shieldIcon.png";
     public static final String TELEPORT_ICON = "teleportIcon.png";
+
+    public static final String UI_ICON_SETTINGS = "ui/iconSettings.png";
+    public static final String UI_ICON_SETTINGS_PRESSED = "ui/iconSettingsPressed.png";
+    public static final String UI_ICON_SOUND = "ui/iconSound.png";
+    public static final String UI_ICON_SOUND_PRESSED = "ui/iconSoundPressed.png";
+    public static final String UI_ICON_PAUSE = "ui/iconPause.png";
+    public static final String UI_ICON_PAUSE_PRESSED = "ui/iconPausePressed.png";
+    public static final String UI_ICON_BACK = "ui/iconBack.png";
+    public static final String UI_ICON_BACK_PRESSED = "ui/iconBackPressed.png";
+    public static final String UI_ICON_RETRY = "ui/iconRetry.png";
+    public static final String UI_ICON_RETRY_PRESSED = "ui/iconRetryPressed.png";
     public static final String HIT_SOUND = "hitSound.mp3";
     public static final String SHIELD_HIT_SOUND = "shieldHit.mp3";
     public static final String HEAL_SOUND = "healSound.mp3";
@@ -40,7 +51,12 @@ public class Assets implements Disposable {
     private static final String[] TEXTURES = {
         BG1, BG2, BG3, MENU, LOAD, GAME_OVER, GAME_WIN,
         BACK_VIEW, RUN_RIGHT, RUN_LEFT, SHIELD_RIGHT, SHIELD_LEFT,
-        ROCKET, HEART, CRYSTAL, SHIELD_ICON, TELEPORT_ICON
+        ROCKET, HEART, CRYSTAL, SHIELD_ICON, TELEPORT_ICON,
+        UI_ICON_SETTINGS, UI_ICON_SETTINGS_PRESSED,
+        UI_ICON_SOUND, UI_ICON_SOUND_PRESSED,
+        UI_ICON_PAUSE, UI_ICON_PAUSE_PRESSED,
+        UI_ICON_BACK, UI_ICON_BACK_PRESSED,
+        UI_ICON_RETRY, UI_ICON_RETRY_PRESSED
     };
 
     private static final String[] SOUNDS = {

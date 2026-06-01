@@ -16,7 +16,11 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
  */
 public class Main extends Game {
     public SpriteBatch batch;
+    /** @deprecated use {@link #fonts#hud} */
     public BitmapFont font;
+    public Fonts fonts;
+    public UiIcons uiIcons;
+    public GameSettings settings;
     public FitViewport viewport;
     public Assets assets;
     public GameData gameData;
@@ -41,8 +45,10 @@ public class Main extends Game {
         whitePixel = new Texture(pixmap);
         pixmap.dispose();
 
-        font = FontFactory.createHudFont();
-        font.setUseIntegerPositions(false);
+        fonts = new Fonts();
+        font = fonts.getFont();
+        uiIcons = new UiIcons();
+        settings = new GameSettings();
         updateFontScale();
 
         if (Gdx.app.getType() != Application.ApplicationType.WebGL) {
@@ -80,8 +86,27 @@ public class Main extends Game {
         level = 1;
     }
 
+    public void initUiAfterLoad() {
+        uiIcons.load(assets);
+    }
+
     public void updateFontScale() {
-        font.getData().setScale(viewport.getWorldHeight() / 480f);
+        updateMenuFontScale();
+    }
+
+    public void updateMenuFontScale() {
+        updateHudFontScale();
+    }
+
+    public void updateHudFontScale() {
+        fonts.updateHudScale(viewport.getWorldHeight());
+        font = fonts.getFont();
+    }
+
+    public void applyMusicSetting() {
+        if (!settings.isMusicEnabled()) {
+            music.setVolume(0f);
+        }
     }
 
     @Override
@@ -102,7 +127,12 @@ public class Main extends Game {
         if (whitePixel != null) {
             whitePixel.dispose();
         }
+        if (uiIcons != null) {
+            uiIcons.dispose();
+        }
+        if (fonts != null) {
+            fonts.dispose();
+        }
         batch.dispose();
-        font.dispose();
     }
 }

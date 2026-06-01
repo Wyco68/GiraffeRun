@@ -8,6 +8,7 @@ public class MusicController {
     private float volume;
     private float targetVolume;
     private float fadeSpeed;
+    private boolean enabled = true;
 
     public void play(Music music, float targetVol, boolean loop) {
         if (music == null) {
@@ -20,9 +21,26 @@ public class MusicController {
         current.setLooping(loop);
         targetVolume = targetVol;
         volume = targetVol;
-        current.setVolume(volume);
+        applyVolume();
         if (!current.isPlaying()) {
             current.play();
+        }
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+        applyVolume();
+    }
+
+    public void setVolume(float vol) {
+        targetVolume = MathUtils.clamp(vol, 0f, 1f);
+        volume = targetVolume;
+        applyVolume();
+    }
+
+    private void applyVolume() {
+        if (current != null) {
+            current.setVolume(enabled ? volume : 0f);
         }
     }
 
@@ -58,6 +76,6 @@ public class MusicController {
         } else {
             volume = Math.max(volume - fadeSpeed * delta, targetVolume);
         }
-        current.setVolume(volume);
+        applyVolume();
     }
 }

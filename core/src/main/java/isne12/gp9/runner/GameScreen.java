@@ -41,6 +41,10 @@ public class GameScreen implements Screen {
     boolean paused;
     ShapeRenderer shapeRenderer;
 
+    private final McButton resumeButton = new McButton();
+    private final McButton retryButton = new McButton();
+    private final McButton menuButton = new McButton();
+
     public GameScreen(final Main game) {
         this.game = game;
         shapeRenderer = new ShapeRenderer();
@@ -70,7 +74,9 @@ public class GameScreen implements Screen {
     @Override
     public void show() {
         game.setState(GameState.PLAYING);
+        game.music.setEnabled(game.settings.isMusicEnabled());
         game.music.play(themeAudio, 0.3f, true);
+        Gdx.input.setInputProcessor(null);
     }
 
     @Override
@@ -80,12 +86,12 @@ public class GameScreen implements Screen {
         }
 
         if (paused) {
-            drawPauseOverlay();
+            drawPauseFrame();
             handlePauseInput();
             return;
         }
 
-        input();
+        input(delta);
         logic(delta);
         if (backGround == null) {
             return;
@@ -93,15 +99,11 @@ public class GameScreen implements Screen {
         draw();
     }
 
-    private void input() {
+    private void input(float delta) {
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
-            paused = true;
-            game.setState(GameState.PAUSED);
-            game.music.pause();
+            openPause();
             return;
         }
-
-        float delta = Gdx.graphics.getDeltaTime();
 
         if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D)) {
             player.moveRight(delta);
@@ -125,14 +127,44 @@ public class GameScreen implements Screen {
         }
     }
 
+    private void openPause() {
+        paused = true;
+        game.setState(GameState.PAUSED);
+        game.music.pause();
+        layoutPauseUi();
+    }
+
+    private void layoutPauseUi() {
+        game.updateMenuFontScale();
+        float w = game.viewport.getWorldWidth();
+        float h = game.viewport.getWorldHeight();
+        float cx = w / 2f;
+        float gap = UiSpacing.medium(h);
+        float btnW = w * 0.42f;
+        float btnH = Math.max(UiSpacing.touchTarget(h) * 0.7f, 0.4f);
+
+        float y = h * 0.56f;
+        y -= MenuText.lineHeight(game, McUi.TITLE_MULT) + gap * 1.5f;
+        resumeButton.set(cx - btnW / 2f, y, btnW, btnH, "RESUME");
+        y -= btnH + gap * 0.6f;
+        retryButton.set(cx - btnW / 2f, y, btnW, btnH, "RETRY");
+        y -= btnH + gap * 0.6f;
+        menuButton.set(cx - btnW / 2f, y, btnW, btnH, "MENU");
+    }
+
     private void handlePauseInput() {
-        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE) || Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
+        resumeButton.clearPressed();
+        retryButton.clearPressed();
+        menuButton.clearPressed();
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE) || Gdx.input.isKeyJustPressed(Input.Keys.ENTER)
+            || resumeButton.handleClick(game.viewport)) {
             resumeGame();
-        } else if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
+        } else if (Gdx.input.isKeyJustPressed(Input.Keys.R) || retryButton.handleClick(game.viewport)) {
             game.resetRun();
             game.setScreen(new GameScreen(game));
             dispose();
-        } else if (Gdx.input.isKeyJustPressed(Input.Keys.Q)) {
+        } else if (Gdx.input.isKeyJustPressed(Input.Keys.Q) || menuButton.handleClick(game.viewport)) {
             game.music.stop();
             game.setScreen(new FirstScreen(game));
             dispose();
@@ -231,11 +263,9 @@ public class GameScreen implements Screen {
         drops.add(drop);
     }
 
-    private void drawWorld() {
+    private void drawHud() {
         float worldWidth = game.viewport.getWorldWidth();
         float worldHeight = game.viewport.getWorldHeight();
-        backGround.render(game.batch, worldWidth, worldHeight);
-
         float iconSize = 0.4f;
         float padding = 0.1f;
         float topY = worldHeight - padding;
@@ -271,7 +301,13 @@ public class GameScreen implements Screen {
                 teleportX + cooldownIconSize / 4f,
                 cooldownY + cooldownIconSize / 1.5f);
         }
+    }
 
+    private void drawWorld() {
+        float worldWidth = game.viewport.getWorldWidth();
+        float worldHeight = game.viewport.getWorldHeight();
+        backGround.render(game.batch, worldWidth, worldHeight);
+        drawHud();
         player.draw(game.batch);
 
         for (Drop drop : drops) {
@@ -284,7 +320,9 @@ public class GameScreen implements Screen {
     private void draw() {
         ScreenUtils.clear(Color.BLACK);
         game.viewport.apply();
+        game.updateHudFontScale();
         game.batch.setProjectionMatrix(game.viewport.getCamera().combined);
+        game.font.setColor(0f, 0.8f, 0.9f, 1f);
 
         game.batch.begin();
         game.batch.setColor(Color.WHITE);
@@ -292,9 +330,10 @@ public class GameScreen implements Screen {
         game.batch.end();
     }
 
-    private void drawPauseOverlay() {
+    private void drawPauseFrame() {
         ScreenUtils.clear(Color.BLACK);
         game.viewport.apply();
+        game.updateHudFontScale();
         game.batch.setProjectionMatrix(game.viewport.getCamera().combined);
 
         game.batch.begin();
@@ -302,27 +341,38 @@ public class GameScreen implements Screen {
         drawWorld();
         game.batch.end();
 
-        float worldWidth = game.viewport.getWorldWidth();
-        float worldHeight = game.viewport.getWorldHeight();
+        float w = game.viewport.getWorldWidth();
+        float h = game.viewport.getWorldHeight();
+        float cx = w / 2f;
+        float gap = UiSpacing.medium(h);
 
-        shapeRenderer.setProjectionMatrix(game.viewport.getCamera().combined);
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setColor(0f, 0f, 0f, 0.55f);
-        shapeRenderer.rect(0, 0, worldWidth, worldHeight);
-        shapeRenderer.end();
-
+        game.updateMenuFontScale();
+        game.batch.setProjectionMatrix(game.viewport.getCamera().combined);
         game.batch.begin();
-        game.font.draw(game.batch, "PAUSED", worldWidth / 2f - 0.8f, worldHeight / 2f + 0.5f);
-        game.font.draw(game.batch, "ESC/ENTER - Resume", 0.8f, worldHeight / 2f);
-        game.font.draw(game.batch, "R - Restart", 0.8f, worldHeight / 2f - 0.4f);
-        game.font.draw(game.batch, "Q - Quit to Menu", 0.8f, worldHeight / 2f - 0.8f);
+        game.batch.setColor(Color.WHITE);
+        UiBatch.drawDimFullscreen(game.batch, game.whitePixel, w, h);
+
+        float y = h * 0.62f;
+        y = McUi.drawTitle(game, game.batch, "Paused", cx, y);
+        y -= gap;
+        McUi.drawSubtitle(game, game.batch, "Game paused", cx, y);
+        y -= gap * 1.2f;
+
+        resumeButton.draw(game, game.batch);
+        retryButton.draw(game, game.batch);
+        menuButton.draw(game, game.batch);
+
+        McUi.drawHint(game, game.batch, "Esc / Enter also resumes", cx, UiSpacing.large(h));
         game.batch.end();
     }
 
     @Override
     public void resize(int width, int height) {
         game.viewport.update(width, height, true);
-        game.updateFontScale();
+        game.updateHudFontScale();
+        if (paused) {
+            layoutPauseUi();
+        }
         if (backGround != null) {
             backGround.onResize(game.viewport.getWorldHeight());
         }
