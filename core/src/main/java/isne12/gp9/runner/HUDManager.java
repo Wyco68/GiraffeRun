@@ -5,7 +5,11 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 
-/** Play-screen HUD: health, skill cooldowns, crystal progress. */
+/**
+ * Legacy batch HUD — replaced by {@link AdaptiveHudLayout} + Scene2D actors.
+ * @deprecated use {@link AdaptiveGameUi}
+ */
+@Deprecated
 public final class HUDManager {
     private static final int HEALTH_SEGMENTS = Player.MAX_HEALTH;
     private static final float CRYSTAL_LERP = 8f;

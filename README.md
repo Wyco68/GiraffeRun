@@ -33,20 +33,6 @@ Requires **JDK 17+**. Deploy by uploading `teavm/build/dist/webapp/` to any stat
 
 ---
 
-## 📸 Screenshots
-
-> _Place gameplay screenshots here. Suggested filenames:_
->
-> | Screenshot | Description |
-> |-----------|-------------|
-> | `screenshots/menu.png` | Main menu screen |
-> | `screenshots/gameplay-level1.png` | In-game Level 1 |
-> | `screenshots/gameplay-level3.png` | In-game Level 3 (high difficulty) |
-> | `screenshots/game-over.png` | Game Over screen |
-> | `screenshots/game-win.png` | Victory screen |
-
----
-
 ## ✨ Key Features
 
 - 🦒 **Animated Giraffe Player** — Smooth 2-frame sprite animation with directional and shield variants
@@ -56,8 +42,9 @@ Requires **JDK 17+**. Deploy by uploading `teavm/build/dist/webapp/` to any stat
 - 🎯 **3 Progressive Levels** — Each level increases drop speed and bullet spawn probability
 - 🎨 **Unique Level Backgrounds** — Distinct scrolling backgrounds for each of the 3 levels
 - 🎵 **Full Audio System** — Looping background music + 7 contextual sound effects
-- 📊 **Live HUD** — Health hearts, crystal counter, level indicator, and ability cooldown timers
-- 🖥️ **Resolution Independent** — FitViewport ensures consistent game world across all window sizes
+- 📊 **Live HUD** — Health bar, crystal progress bar, and ability cooldown timers (no level text overlay)
+- 📱 **Adaptive UI** — LibGDX Scene2D (`Stage` + `Table`); separate HUD viewport; mobile portrait vs desktop layouts; touch targets scale with screen (see [`docs/UI_SYSTEM.md`](docs/UI_SYSTEM.md))
+- 🖥️ **Resolution Independent** — Gameplay `FitViewport(8×5)`; HUD `ExtendViewport(1280×720)`; layout rebuilds on resize only
 - 📦 **Single-JAR Distribution** — Cross-platform fat JAR requires only a JVM to run
 - 🌐 **Browser build** — TeaVM WebAssembly (same Java game code as desktop)
 
@@ -107,7 +94,11 @@ GiraffeRun/
 │           ├── HealthDrop.java     # Healing drop — restores HP
 │           ├── CrystalDrop.java    # Objective drop — advance level
 │           ├── GameScreen.java     # Core gameplay loop (input/logic/draw)
+│           ├── AdaptiveGameUi.java # Adaptive HUD + touch overlay
+│           ├── AdaptiveHudLayout.java # Table layouts (mobile / desktop)
+│           ├── UiScreenProfile.java  # Screen class + uiScale
 │           ├── FirstScreen.java    # Main menu
+│           ├── LoadingScreen.java    # Asset splash
 │           ├── LoadScreen.java     # Between-level transition
 │           ├── GameOverScreen.java # Death screen
 │           └── GameWinScreen.java  # Victory screen
@@ -128,9 +119,9 @@ GiraffeRun/
 **Screen flow:**
 
 ```
-FirstScreen ──[SPACE]──► GameScreen ──[5 crystals, level < 3]──► LoadScreen ──► GameScreen (next level)
-                                   ──[5 crystals, level = 3]──► GameWinScreen ──[SPACE]──► GameScreen
-                                   ──[HP = 0]──────────────────► GameOverScreen ──[SPACE]──► GameScreen
+LoadingScreen ──► FirstScreen ──[SPACE]──► GameScreen ──[5 crystals, level < 4]──► LoadScreen ──► GameScreen
+                                                      ──[5 crystals, level = 4]──► GameWinScreen ──[SPACE]──► GameScreen
+                                                      ──[HP = 0]──────────────────► GameOverScreen ──[SPACE]──► GameScreen
 ```
 
 ---
@@ -167,10 +158,6 @@ git clone https://github.com/Wyco68/GiraffeRun.git
 cd GiraffeRun
 
 # 2. Run the game using the Gradle wrapper (no Gradle install required)
-# Windows:
-gradlew.bat lwjgl3:run
-
-# macOS / Linux:
 ./gradlew lwjgl3:run
 ```
 
@@ -198,8 +185,11 @@ gradlew.bat lwjgl3:run
 | Move Right | `→` Arrow or `D` |
 | Move Left | `←` Arrow or `A` |
 | Activate Shield | `S` or Right Mouse Button |
-| Teleport | Left Mouse Button (click target location) |
+| Teleport | Left Mouse Button / tap playfield (not on HUD buttons) |
+| Pause | `Esc` (in-game) |
 | Start Game / Next Level / Restart | `SPACE` |
+
+**Mobile / tablet (touch UI on):** bottom-left hold buttons to move; bottom-right shield; pause under health bar. Desktop (width ≥1200px): keyboard/mouse only.
 
 ---
 
@@ -254,6 +244,12 @@ Output bundles are placed in `lwjgl3/build/construo/`.
 
 ## 🧪 Development Notes
 
+### Adaptive UI
+
+- In-game HUD: `AdaptiveGameUi` → `AdaptiveHudLayout` on `ViewportStage` (`ExtendViewport` 1280×720)
+- Screen buckets: mobile (`width < 768`), tablet, desktop (`width ≥ 1200`); portrait uses `buildMobileLayout()`, else `buildDesktopLayout()`
+- Full layout, spacing, and TeaVM notes: [`docs/UI_SYSTEM.md`](docs/UI_SYSTEM.md)
+
 ### Project Structure Notes
 
 - All textures and audio must be placed in the **`assets/`** directory at the project root — it is included in the LWJGL3 module's resources source set automatically
@@ -271,15 +267,15 @@ Output bundles are placed in `lwjgl3/build/construo/`.
 
 ### Adding a New Level
 
-1. Add a new background texture `BG4.png` to `assets/`
-2. Update the win condition in `GameScreen.logic()` from `game.level >= 3` to `game.level >= 4`
-3. Optionally adjust spawn probability formulas in `createDrop()` for level 4 balance
+1. Add a tier entry to `LevelConfig.BY_TIER` and raise `LevelConfig.MAX_LEVEL`
+2. Add a background texture and wire it in `Assets.getLevelBackgroundPath()`
+3. Tune spawn weights in `GameScreen.createDrop()` for the new tier
 
 ---
 
 ## 👥 Credits
 
-- **Developer:** ISNE12 Group 9 (Coursework — Object-Oriented Programming)
+- **Developer:** Wyco (CourseWork: ISNE12 Group 9 — Object-Oriented Programming)
 - **Framework:** [libGDX](https://libgdx.com/) by BadLogic Games
 - **Build Tooling:** [Gradle](https://gradle.org/), [Construo](https://github.com/fourlastor/construo)
 - **Runtime:** [LWJGL3](https://www.lwjgl.org/)

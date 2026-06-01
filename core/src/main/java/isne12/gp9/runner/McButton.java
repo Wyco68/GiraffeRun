@@ -34,6 +34,12 @@ public class McButton {
         return false;
     }
 
+    public boolean containsWorld(float worldX, float worldY, float worldHeight) {
+        float pad = UiSpacing.small(worldHeight) * 0.35f;
+        return bounds.x - pad <= worldX && worldX <= bounds.x + bounds.width + pad
+            && bounds.y - pad <= worldY && worldY <= bounds.y + bounds.height + pad;
+    }
+
     public void clearPressed() {
         pressed = false;
     }

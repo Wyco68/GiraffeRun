@@ -37,8 +37,7 @@ public class GameScreen implements Screen {
     Texture teleportIcon;
     Texture crystalIcon;
 
-    HUDManager hudManager;
-    TouchControlsOverlay touchControls;
+    AdaptiveGameUi adaptiveUi;
     InputMultiplexer gameplayInput;
 
     boolean gameEnded;
@@ -47,6 +46,18 @@ public class GameScreen implements Screen {
     private final McButton resumeButton = new McButton();
     private final McButton retryButton = new McButton();
     private final McButton menuButton = new McButton();
+    private UiMenuLayout.MenuLayout pauseLayout;
+
+    private final InputAdapter pauseInput = new InputAdapter() {
+        @Override
+        public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+            if (pointer > 0) {
+                return false;
+            }
+            handlePauseTouch(screenX, screenY);
+            return true;
+        }
+    };
 
     public GameScreen(final Main game) {
         this.game = game;
@@ -70,29 +81,27 @@ public class GameScreen implements Screen {
         crystalIcon = assets.getTexture(Assets.CRYSTAL);
         shieldIcon = assets.getTexture(Assets.SHIELD_ICON);
         teleportIcon = assets.getTexture(Assets.TELEPORT_ICON);
-        hudManager = new HUDManager(shieldIcon, teleportIcon, crystalIcon, game.whitePixel);
-        hudManager.reset();
-
-        touchControls = new TouchControlsOverlay(game, player, this::openPause);
-        gameplayInput = new InputMultiplexer(touchControls, new GameplayTouchListener());
-        touchControls.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        adaptiveUi = new AdaptiveGameUi(game, player, shieldIcon, teleportIcon, crystalIcon,
+            this::openPause);
+        gameplayInput = new InputMultiplexer(adaptiveUi.getTouchControls(), new GameplayTouchListener());
+        adaptiveUi.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
     }
 
     @Override
     public void show() {
         game.setState(GameState.PLAYING);
-        game.music.setEnabled(game.settings.isMusicEnabled());
+        game.applyAudioSettings();
         game.music.play(themeAudio, 0.3f, true);
         setupGameplayInput();
     }
 
     private void setupGameplayInput() {
-        touchControls.setVisible(true);
+        adaptiveUi.setTouchVisible(true);
         Gdx.input.setInputProcessor(gameplayInput);
     }
 
     private void clearGameplayInput() {
-        touchControls.setVisible(false);
+        adaptiveUi.setTouchVisible(false);
         Gdx.input.setInputProcessor(null);
     }
 
@@ -123,9 +132,9 @@ public class GameScreen implements Screen {
         }
 
         boolean moveRight = Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D)
-            || touchControls.isMovingRight();
+            || adaptiveUi.getTouchControls().isMovingRight();
         boolean moveLeft = Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A)
-            || touchControls.isMovingLeft();
+            || adaptiveUi.getTouchControls().isMovingLeft();
         if (moveRight) {
             player.moveRight(delta);
         } else if (moveLeft) {
@@ -154,7 +163,7 @@ public class GameScreen implements Screen {
             }
             touchPos.set(screenX, screenY);
             game.viewport.unproject(touchPos);
-            if (touchControls.blocksTeleport(touchPos.x, touchPos.y)) {
+            if (adaptiveUi.getTouchControls().blocksTeleport(touchPos.x, touchPos.y)) {
                 return false;
             }
             tryTeleportAt(touchPos);
@@ -166,44 +175,46 @@ public class GameScreen implements Screen {
         paused = true;
         game.setState(GameState.PAUSED);
         game.music.pause();
+        adaptiveUi.setHudVisible(false);
         clearGameplayInput();
         layoutPauseUi();
+        Gdx.input.setInputProcessor(pauseInput);
     }
 
     private void layoutPauseUi() {
         game.updateMenuFontScale();
         float w = game.viewport.getWorldWidth();
         float h = game.viewport.getWorldHeight();
-        float cx = w / 2f;
-        float gap = UiSpacing.medium(h);
-        float btnW = w * 0.42f;
-        float btnH = Math.max(UiSpacing.touchTarget(h) * 0.7f, 0.4f);
-
-        float y = h * 0.56f;
-        y -= MenuText.lineHeight(game, McUi.TITLE_MULT) + gap * 1.5f;
-        float btnY = UiBounds.clampY(y, btnH, h);
-        resumeButton.set(UiBounds.clampX(cx - btnW / 2f, btnW, w, h), btnY, btnW, btnH, "RESUME");
-        y = btnY - btnH - gap * 0.6f;
-        btnY = UiBounds.clampY(y, btnH, h);
-        retryButton.set(UiBounds.clampX(cx - btnW / 2f, btnW, w, h), btnY, btnW, btnH, "RETRY");
-        y = btnY - btnH - gap * 0.6f;
-        btnY = UiBounds.clampY(y, btnH, h);
-        menuButton.set(UiBounds.clampX(cx - btnW / 2f, btnW, w, h), btnY, btnW, btnH, "MENU");
+        pauseLayout = UiMenuLayout.layoutMenuBlock(game, w, h,
+            new McButton[] { resumeButton, retryButton, menuButton },
+            new String[] { "RESUME", "RETRY", "MENU" }, 2, 1);
     }
 
-    private void handlePauseInput() {
-        resumeButton.clearPressed();
-        retryButton.clearPressed();
-        menuButton.clearPressed();
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE) || Gdx.input.isKeyJustPressed(Input.Keys.ENTER)
-            || resumeButton.handleClick(game.viewport)) {
+    private void handlePauseTouch(int screenX, int screenY) {
+        touchPos.set(screenX, screenY);
+        game.viewport.unproject(touchPos);
+        float h = game.viewport.getWorldHeight();
+        if (resumeButton.containsWorld(touchPos.x, touchPos.y, h)) {
             resumeGame();
-        } else if (Gdx.input.isKeyJustPressed(Input.Keys.R) || retryButton.handleClick(game.viewport)) {
+        } else if (retryButton.containsWorld(touchPos.x, touchPos.y, h)) {
             game.resetRun();
             game.setScreen(new GameScreen(game));
             dispose();
-        } else if (Gdx.input.isKeyJustPressed(Input.Keys.Q) || menuButton.handleClick(game.viewport)) {
+        } else if (menuButton.containsWorld(touchPos.x, touchPos.y, h)) {
+            game.music.stop();
+            game.setScreen(new FirstScreen(game));
+            dispose();
+        }
+    }
+
+    private void handlePauseInput() {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE) || Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
+            resumeGame();
+        } else if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
+            game.resetRun();
+            game.setScreen(new GameScreen(game));
+            dispose();
+        } else if (Gdx.input.isKeyJustPressed(Input.Keys.Q)) {
             game.music.stop();
             game.setScreen(new FirstScreen(game));
             dispose();
@@ -214,6 +225,7 @@ public class GameScreen implements Screen {
         paused = false;
         game.setState(GameState.PLAYING);
         game.music.resume();
+        adaptiveUi.setHudVisible(true);
         setupGameplayInput();
     }
 
@@ -227,7 +239,7 @@ public class GameScreen implements Screen {
         backGround.update(delta, worldHeight, game);
         player.update(delta);
         effects.update(delta);
-        hudManager.update(delta, player);
+        adaptiveUi.update(delta, player);
 
         for (int i = drops.size - 1; i >= 0; i--) {
             Drop drop = drops.get(i);
@@ -264,11 +276,11 @@ public class GameScreen implements Screen {
 
     private void endGame(boolean won) {
         gameEnded = true;
-        touchControls.setVisible(false);
+        adaptiveUi.setTouchVisible(false);
         game.music.fadeTo(0f, 0.5f);
 
         if (won) {
-            gameWinSound.play();
+            game.playSound(gameWinSound);
             if (game.getLevel() >= game.getMaxLevel()) {
                 game.gameData.recordRun(game.getMaxLevel(), player.getCrystalCollected());
                 game.resetRun();
@@ -282,7 +294,7 @@ public class GameScreen implements Screen {
             }
         } else {
             game.gameData.recordRun(game.getLevel(), player.getCrystalCollected());
-            gameOverSound.play();
+            game.playSound(gameOverSound);
             game.setState(GameState.GAME_OVER);
             game.setScreen(new GameOverScreen(game));
         }
@@ -329,8 +341,15 @@ public class GameScreen implements Screen {
         game.batch.begin();
         game.batch.setColor(Color.WHITE);
         drawWorld();
-        hudManager.draw(game.batch, game, player);
-        touchControls.draw(game.batch);
+        game.batch.end();
+
+        adaptiveUi.drawHudStage();
+
+        game.viewport.apply();
+        game.batch.setProjectionMatrix(game.viewport.getCamera().combined);
+        game.batch.begin();
+        game.batch.setColor(Color.WHITE);
+        adaptiveUi.drawTouchOverlay(game.batch);
         game.batch.end();
     }
 
@@ -343,13 +362,11 @@ public class GameScreen implements Screen {
         game.batch.begin();
         game.batch.setColor(Color.WHITE);
         drawWorld();
-        hudManager.draw(game.batch, game, player);
         game.batch.end();
 
         float w = game.viewport.getWorldWidth();
         float h = game.viewport.getWorldHeight();
         float cx = w / 2f;
-        float gap = UiSpacing.medium(h);
 
         game.updateMenuFontScale();
         game.batch.setProjectionMatrix(game.viewport.getCamera().combined);
@@ -357,17 +374,19 @@ public class GameScreen implements Screen {
         game.batch.setColor(Color.WHITE);
         UiBatch.drawDimFullscreen(game.batch, game.whitePixel, w, h);
 
-        float y = h * 0.62f;
-        y = McUi.drawTitle(game, game.batch, "Paused", cx, y);
-        y -= gap;
-        McUi.drawSubtitle(game, game.batch, "Game paused", cx, y);
-        y -= gap * 1.2f;
+        if (pauseLayout != null) {
+            float y = pauseLayout.titleBaselineY;
+            y = McUi.drawTitle(game, game.batch, "Paused", cx, y);
+            y = McUi.drawSubtitle(game, game.batch, "Game paused", cx, y);
+        }
 
         resumeButton.draw(game, game.batch);
         retryButton.draw(game, game.batch);
         menuButton.draw(game, game.batch);
 
-        McUi.drawHint(game, game.batch, "Esc / Enter also resumes", cx, UiSpacing.large(h));
+        if (pauseLayout != null) {
+            McUi.drawHint(game, game.batch, "Esc / Enter also resumes", cx, pauseLayout.hintBaselineY);
+        }
         game.batch.end();
     }
 
@@ -375,8 +394,8 @@ public class GameScreen implements Screen {
     public void resize(int width, int height) {
         game.viewport.update(width, height, true);
         game.updateHudFontScale();
-        if (touchControls != null) {
-            touchControls.resize(width, height);
+        if (adaptiveUi != null) {
+            adaptiveUi.resize(width, height);
         }
         if (paused) {
             layoutPauseUi();
@@ -411,8 +430,8 @@ public class GameScreen implements Screen {
         if (effects != null) {
             effects.dispose();
         }
-        if (touchControls != null) {
-            touchControls.dispose();
+        if (adaptiveUi != null) {
+            adaptiveUi.dispose();
         }
     }
 }

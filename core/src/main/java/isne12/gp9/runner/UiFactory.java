@@ -50,10 +50,8 @@ public final class UiFactory {
     }
 
     public static float touchButtonSize(float worldHeight) {
-        float min = UiSpacing.pxToWorld(64f, worldHeight);
-        float max = UiSpacing.pxToWorld(96f, worldHeight);
-        float preferred = UiSpacing.pxToWorld(80f, worldHeight);
-        return com.badlogic.gdx.math.MathUtils.clamp(preferred, min, max);
+        UiScreenProfile profile = UiScreenProfile.fromDisplay();
+        return profile.pxToGameplayWorld(profile.touchButtonPx, worldHeight);
     }
 
     public static ImageButton.ImageButtonStyle textureButtonStyle(Texture up, Texture down) {

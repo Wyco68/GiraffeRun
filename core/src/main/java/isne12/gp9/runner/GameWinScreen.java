@@ -11,6 +11,7 @@ public class GameWinScreen implements Screen {
     final Main game;
     Texture backGround;
     private final McButton retryButton = new McButton();
+    private UiMenuLayout.MenuLayout menuLayout;
 
     public GameWinScreen(final Main game) {
         this.game = game;
@@ -22,22 +23,13 @@ public class GameWinScreen implements Screen {
         game.updateMenuFontScale();
         float w = game.viewport.getWorldWidth();
         float h = game.viewport.getWorldHeight();
-        float cx = w / 2f;
-        float gap = UiSpacing.medium(h);
-        float btnW = w * 0.5f;
-        float btnH = Math.max(UiSpacing.touchTarget(h), 0.5f);
-
-        float y = h * 0.58f;
-        y -= MenuText.lineHeight(game, McUi.TITLE_MULT) + gap;
-        y -= MenuText.lineHeight(game, McUi.SUBTITLE_MULT) + gap;
-        float btnY = UiBounds.clampY(y - btnH, btnH, h);
-        retryButton.set(UiBounds.clampX(cx - btnW / 2f, btnW, w, h), btnY, btnW, btnH, "PLAY AGAIN");
+        menuLayout = UiMenuLayout.layoutSingleButton(game, w, h, retryButton, "PLAY AGAIN", 2, 0);
     }
 
     @Override
     public void show() {
         game.setState(GameState.GAME_WIN);
-        game.music.setEnabled(game.settings.isMusicEnabled());
+        game.applyAudioSettings();
         game.music.play(game.assets.getMusic(Assets.THEME_AUDIO), 0.2f, true);
         Gdx.input.setInputProcessor(null);
     }
@@ -52,23 +44,26 @@ public class GameWinScreen implements Screen {
         float w = game.viewport.getWorldWidth();
         float h = game.viewport.getWorldHeight();
         float cx = w / 2f;
-        float gap = UiSpacing.medium(h);
 
         game.batch.begin();
         game.batch.setColor(Color.WHITE);
         game.batch.draw(backGround, 0, 0, w, h);
         UiBatch.drawDimFullscreen(game.batch, game.whitePixel, w, h);
 
-        float y = h * 0.62f;
-        y = McUi.drawTitle(game, game.batch, "You Win!", cx, y);
-        y -= gap;
-        McUi.drawSubtitle(game, game.batch, "High score " + game.gameData.getHighScore(), cx, y);
+        if (menuLayout != null) {
+            float y = menuLayout.titleBaselineY;
+            y = McUi.drawTitle(game, game.batch, "You Win!", cx, y);
+            McUi.drawSubtitle(game, game.batch, "All levels complete!", cx, y);
+        }
+
         retryButton.draw(game, game.batch);
         game.batch.end();
 
         retryButton.clearPressed();
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) || retryButton.handleClick(game.viewport)) {
-            game.music.fadeTo(0.3f, 0.5f);
+            if (game.settings.isAudioEnabled()) {
+                game.music.fadeTo(0.3f, 0.5f);
+            }
             game.setScreen(new GameScreen(game));
             dispose();
         }

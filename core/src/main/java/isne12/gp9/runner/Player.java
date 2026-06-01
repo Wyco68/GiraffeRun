@@ -66,7 +66,7 @@ public class Player extends GameObject {
         if (teleportCooldown > 0) {
             return false;
         }
-        teleportSound.play();
+        game.playSound(teleportSound);
         sprite.setX(MathUtils.clamp(touchPos.x - displayWidth / 2f, 0,
             game.viewport.getWorldWidth() - displayWidth));
         syncRectangle();
@@ -140,22 +140,22 @@ public class Player extends GameObject {
 
     public void getHit() {
         if (shieldActive) {
-            shieldHitSound.play();
+            game.playSound(shieldHitSound);
             return;
         }
-        hitSound.play();
+        game.playSound(hitSound);
         health--;
     }
 
     public void heal() {
         if (health < MAX_HEALTH) {
-            healSound.play();
+            game.playSound(healSound);
             health++;
         }
     }
 
     public void collectCrystal() {
-        collectSound.play();
+        game.playSound(collectSound);
         crystalCollected++;
     }
 }

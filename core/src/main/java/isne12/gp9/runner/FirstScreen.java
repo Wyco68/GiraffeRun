@@ -4,19 +4,17 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 public class FirstScreen implements Screen {
     final Main game;
-    Texture backGround;
 
     private final McButton playButton = new McButton();
     private final McButton soundButton = new McButton();
+    private UiMenuLayout.MenuLayout menuLayout;
 
     public FirstScreen(final Main game) {
         this.game = game;
-        backGround = game.assets.getTexture(Assets.MENU);
         layoutUi();
     }
 
@@ -24,30 +22,14 @@ public class FirstScreen implements Screen {
         game.updateMenuFontScale();
         float w = game.viewport.getWorldWidth();
         float h = game.viewport.getWorldHeight();
-        float cx = w / 2f;
-        float gap = UiSpacing.medium(h);
-        float btnW = w * 0.48f;
-        float btnH = Math.max(UiSpacing.touchTarget(h), 0.5f);
-
-        float y = h - UiSpacing.large(h);
-        y -= MenuText.lineHeight(game, McUi.TITLE_MULT) + gap;
-        y -= MenuText.lineHeight(game, McUi.SUBTITLE_MULT) + gap * 1.5f;
-
-        float playY = UiBounds.clampY(y - btnH, btnH, h);
-        playButton.set(UiBounds.clampX(cx - btnW / 2f, btnW, w, h), playY, btnW, btnH, "PLAY");
-
-        float sndW = w * 0.2f;
-        float sndH = btnH * 0.62f;
-        float sndX = UiBounds.clampX(UiBounds.safeRight(w, h) - sndW, sndW, w, h);
-        float sndY = UiBounds.clampY(UiBounds.safeTop(h) - sndH, sndH, h);
-        soundButton.set(sndX, sndY, sndW, sndH,
-            game.settings.isMusicEnabled() ? "SOUND" : "MUTE");
+        menuLayout = UiMenuLayout.layoutSingleButton(game, w, h, playButton, "PLAY", 2, 1);
+        UiMenuLayout.layoutSoundToggle(game, soundButton, w, h);
     }
 
     @Override
     public void show() {
         game.setState(GameState.MENU);
-        game.music.setEnabled(game.settings.isMusicEnabled());
+        game.applyAudioSettings();
         game.music.play(game.assets.getMusic(Assets.THEME_AUDIO), 0.25f, true);
         Gdx.input.setInputProcessor(null);
     }
@@ -62,27 +44,24 @@ public class FirstScreen implements Screen {
         float w = game.viewport.getWorldWidth();
         float h = game.viewport.getWorldHeight();
         float cx = w / 2f;
-        float gap = UiSpacing.medium(h);
 
         game.batch.begin();
         game.batch.setColor(Color.WHITE);
-        game.batch.draw(backGround, 0, 0, w, h);
 
-        float y = h - UiSpacing.large(h);
-        y = McUi.drawTitle(game, game.batch, "GiraffeRun", cx, y);
-        y -= gap;
-        y = McUi.drawSubtitle(game, game.batch, "Collect 5 crystals per level", cx, y);
-        y -= gap * 1.2f;
+        if (menuLayout != null) {
+            float y = menuLayout.titleBaselineY;
+            y = McUi.drawTitle(game, game.batch, "GiraffeRun", cx, y);
+            y = McUi.drawSubtitle(game, game.batch, "Collect 5 crystals per level", cx, y);
+        }
 
         playButton.draw(game, game.batch);
         soundButton.draw(game, game.batch);
 
-        float hintsY = playButton.getBounds().y - gap;
-        hintsY = McUi.drawHint(game, game.batch,
-            "A/D move  S shield  Tap field to teleport  On-screen buttons on mobile", cx, hintsY);
-        McUi.drawHint(game, game.batch,
-            "High " + game.gameData.getHighScore() + "  Best Lv " + game.gameData.getBestLevel(),
-            cx, hintsY - gap * 0.5f);
+        if (menuLayout != null) {
+            McUi.drawHint(game, game.batch,
+                "A/D move  S shield  Tap field to teleport  On-screen buttons on mobile", cx,
+                menuLayout.hintBaselineY);
+        }
         game.batch.end();
 
         playButton.clearPressed();
@@ -91,14 +70,16 @@ public class FirstScreen implements Screen {
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) || playButton.handleClick(game.viewport)) {
             beginGame();
         } else if (soundButton.handleClick(game.viewport)) {
-            game.settings.toggleMusic();
-            game.music.setEnabled(game.settings.isMusicEnabled());
+            game.settings.toggleAudio();
+            game.applyAudioSettings();
             layoutUi();
         }
     }
 
     private void beginGame() {
-        game.music.fadeTo(0.3f, 0.5f);
+        if (game.settings.isAudioEnabled()) {
+            game.music.fadeTo(0.3f, 0.5f);
+        }
         game.setScreen(new GameScreen(game));
         dispose();
     }

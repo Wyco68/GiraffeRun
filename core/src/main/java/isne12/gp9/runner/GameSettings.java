@@ -2,17 +2,30 @@ package isne12.gp9.runner;
 
 /** Runtime UI preferences (TeaVM-safe local state). */
 public class GameSettings {
-    private boolean musicEnabled = true;
+    /** When false, mutes theme music and all one-shot SFX. */
+    private boolean audioEnabled = true;
 
-    public boolean isMusicEnabled() {
-        return musicEnabled;
+    public boolean isAudioEnabled() {
+        return audioEnabled;
     }
 
-    public void setMusicEnabled(boolean musicEnabled) {
-        this.musicEnabled = musicEnabled;
+    public boolean isMusicEnabled() {
+        return audioEnabled;
+    }
+
+    public void setAudioEnabled(boolean enabled) {
+        this.audioEnabled = enabled;
+    }
+
+    public void setMusicEnabled(boolean enabled) {
+        this.audioEnabled = enabled;
+    }
+
+    public void toggleAudio() {
+        audioEnabled = !audioEnabled;
     }
 
     public void toggleMusic() {
-        musicEnabled = !musicEnabled;
+        toggleAudio();
     }
 }

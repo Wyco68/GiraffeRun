@@ -66,23 +66,48 @@ public class Assets implements Disposable {
     };
 
     private final AssetManager assetManager = new AssetManager();
+    private boolean menuSplashQueued;
     private boolean loadingQueued;
+
+    private TextureLoader.TextureParameter textureParams() {
+        TextureLoader.TextureParameter textureParams = new TextureLoader.TextureParameter();
+        textureParams.minFilter = TextureFilter.Nearest;
+        textureParams.magFilter = TextureFilter.Nearest;
+        return textureParams;
+    }
+
+    /** Loads {@link #MENU} first so the initial loading screen can show it. */
+    public void loadMenuSplash() {
+        if (menuSplashQueued) {
+            return;
+        }
+        menuSplashQueued = true;
+        assetManager.load(MENU, Texture.class, textureParams());
+    }
+
+    public boolean isMenuSplashLoaded() {
+        return assetManager.isLoaded(MENU, Texture.class);
+    }
 
     public void loadAll() {
         if (loadingQueued) {
             return;
         }
         loadingQueued = true;
-        TextureLoader.TextureParameter textureParams = new TextureLoader.TextureParameter();
-        textureParams.minFilter = TextureFilter.Nearest;
-        textureParams.magFilter = TextureFilter.Nearest;
+        TextureLoader.TextureParameter textureParams = textureParams();
         for (String path : TEXTURES) {
-            assetManager.load(path, Texture.class, textureParams);
+            if (!assetManager.isLoaded(path, Texture.class)) {
+                assetManager.load(path, Texture.class, textureParams);
+            }
         }
         for (String path : SOUNDS) {
-            assetManager.load(path, Sound.class, new SoundLoader.SoundParameter());
+            if (!assetManager.isLoaded(path, Sound.class)) {
+                assetManager.load(path, Sound.class, new SoundLoader.SoundParameter());
+            }
         }
-        assetManager.load(THEME_AUDIO, Music.class, new MusicLoader.MusicParameter());
+        if (!assetManager.isLoaded(THEME_AUDIO, Music.class)) {
+            assetManager.load(THEME_AUDIO, Music.class, new MusicLoader.MusicParameter());
+        }
     }
 
     public boolean update() {
@@ -90,10 +115,16 @@ public class Assets implements Disposable {
     }
 
     public float getProgress() {
+        if (!loadingQueued) {
+            return 0f;
+        }
         return assetManager.getProgress();
     }
 
     public boolean isLoaded() {
+        if (!loadingQueued) {
+            return false;
+        }
         return assetManager.getProgress() >= 1f;
     }
 

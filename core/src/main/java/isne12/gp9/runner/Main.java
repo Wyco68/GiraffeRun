@@ -7,6 +7,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.viewport.FitViewport;
@@ -127,13 +128,30 @@ public class Main extends Game {
     }
 
     public void updateHudFontScale() {
-        fonts.updateHudScale(viewport.getWorldHeight());
+        UiScreenProfile profile = UiScreenProfile.fromDisplay();
+        fonts.updateHudScale(viewport.getWorldHeight() * profile.uiScale);
         font = fonts.getFont();
     }
 
-    public void applyMusicSetting() {
-        if (!settings.isMusicEnabled()) {
+    /** Applies mute to theme music (and gates {@link #playSound}). */
+    public void applyAudioSettings() {
+        music.setEnabled(settings.isAudioEnabled());
+        if (!settings.isAudioEnabled()) {
             music.setVolume(0f);
+        }
+    }
+
+    public void applyMusicSetting() {
+        applyAudioSettings();
+    }
+
+    public void playSound(Sound sound) {
+        playSound(sound, 1f);
+    }
+
+    public void playSound(Sound sound, float volume) {
+        if (sound != null && settings.isAudioEnabled()) {
+            sound.play(volume);
         }
     }
 

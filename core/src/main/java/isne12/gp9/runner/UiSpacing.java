@@ -11,8 +11,8 @@ public final class UiSpacing {
     public static final float MEDIUM_PX = 16f;
     public static final float LARGE_PX = 24f;
     public static final float XL_PX = 32f;
-    /** Minimum touch target (48–64px design range). */
-    public static final float TOUCH_MIN_PX = 48f;
+    /** Minimum touch target at 480px ref (see {@link UiScreenProfile} for device clamps). */
+    public static final float TOUCH_MIN_PX = 64f;
     public static final float ICON_PX = 56f;
 
     private UiSpacing() {

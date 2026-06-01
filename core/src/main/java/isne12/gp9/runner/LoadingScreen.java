@@ -4,11 +4,13 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 public class LoadingScreen implements Screen {
     private final Main game;
     private final McButton continueButton = new McButton();
+    private UiMenuLayout.MenuLayout menuLayout;
     private boolean loadStarted;
     private boolean assetsReady;
 
@@ -20,11 +22,7 @@ public class LoadingScreen implements Screen {
         game.updateMenuFontScale();
         float w = game.viewport.getWorldWidth();
         float h = game.viewport.getWorldHeight();
-        float cx = w / 2f;
-        float btnW = w * 0.5f;
-        float btnH = Math.max(UiSpacing.touchTarget(h), 0.5f);
-        float btnY = UiBounds.clampY(h * 0.2f, btnH, h);
-        continueButton.set(UiBounds.clampX(cx - btnW / 2f, btnW, w, h), btnY, btnW, btnH, "CONTINUE");
+        menuLayout = UiMenuLayout.layoutSingleButton(game, w, h, continueButton, "CONTINUE", 2, 0);
     }
 
     @Override
@@ -38,6 +36,7 @@ public class LoadingScreen implements Screen {
     @Override
     public void render(float delta) {
         if (!loadStarted) {
+            game.assets.loadMenuSplash();
             game.assets.loadAll();
             loadStarted = true;
         }
@@ -62,15 +61,21 @@ public class LoadingScreen implements Screen {
         game.batch.begin();
         game.batch.setColor(Color.WHITE);
 
-        float y = h - UiSpacing.large(h);
-        y = McUi.drawTitle(game, game.batch, "GiraffeRun", cx, y);
+        if (game.assets.isMenuSplashLoaded()) {
+            Texture menuBg = game.assets.getTexture(Assets.MENU);
+            game.batch.draw(menuBg, 0f, 0f, w, h);
+        }
 
-        float textY = h * 0.48f;
-        if (assetsReady) {
-            textY = McUi.drawSubtitle(game, game.batch, "Ready!", cx, textY);
+        if (assetsReady && menuLayout != null) {
+            float y = menuLayout.titleBaselineY;
+            y = McUi.drawTitle(game, game.batch, "GiraffeRun", cx, y);
+            McUi.drawSubtitle(game, game.batch, "Ready!", cx, y);
             continueButton.draw(game, game.batch);
         } else {
-            McUi.drawSubtitle(game, game.batch, "Loading " + Math.round(progress * 100) + "%", cx, textY);
+            float mid = (UiBounds.safeBottom(h) + UiBounds.safeTop(h)) * 0.5f;
+            float y = mid + MenuText.lineHeight(game, McUi.TITLE_MULT) * 0.5f;
+            y = McUi.drawTitle(game, game.batch, "GiraffeRun", cx, y);
+            McUi.drawSubtitle(game, game.batch, "Loading " + Math.round(progress * 100) + "%", cx, y);
         }
         game.batch.end();
 

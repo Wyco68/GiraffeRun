@@ -4,22 +4,31 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
 /**
- * Scene2D stage with its own {@link FitViewport} — never share the game world viewport
- * (sharing breaks the camera, layout, and batch projection).
+ * Scene2D HUD stage — same {@link FitViewport} world (8×5) as gameplay so HUD stays in the play area.
  */
 public class ViewportStage extends Stage {
-    private static final float WORLD_WIDTH = 8f;
-    private static final float WORLD_HEIGHT = 5f;
+  public static final float WORLD_WIDTH = 8f;
+  public static final float WORLD_HEIGHT = 5f;
 
-    private final FitViewport fitViewport;
+  private final FitViewport fitViewport;
+  private UiScreenProfile profile = UiScreenProfile.fromSize(1280, 720);
 
-    public ViewportStage() {
-        super(new FitViewport(WORLD_WIDTH, WORLD_HEIGHT));
-        this.fitViewport = (FitViewport) getViewport();
-    }
+  public ViewportStage() {
+    super(new FitViewport(WORLD_WIDTH, WORLD_HEIGHT));
+    this.fitViewport = (FitViewport) getViewport();
+  }
 
-    public void resize(int screenWidth, int screenHeight) {
-        fitViewport.update(screenWidth, screenHeight, true);
-        getRoot().setBounds(0f, 0f, fitViewport.getWorldWidth(), fitViewport.getWorldHeight());
-    }
+  public FitViewport getFitViewport() {
+    return fitViewport;
+  }
+
+  public UiScreenProfile getProfile() {
+    return profile;
+  }
+
+  public void resize(int screenWidth, int screenHeight) {
+    profile = UiScreenProfile.fromSize(screenWidth, screenHeight);
+    fitViewport.update(screenWidth, screenHeight, true);
+    getRoot().setBounds(0f, 0f, fitViewport.getWorldWidth(), fitViewport.getWorldHeight());
+  }
 }
