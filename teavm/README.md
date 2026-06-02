@@ -72,6 +72,15 @@ A Gradle daemon or a previous TeaVM server may still have the JAR open. Stop dae
 ./gradlew :teavm:runJs
 ```
 
+## Deploy (GitHub Pages)
+
+CI workflow: [`.github/workflows/deploy-pages.yml`](../.github/workflows/deploy-pages.yml)
+
+1. GitHub repo → **Settings → Pages** → **Source: GitHub Actions**
+2. Push to `main` / `master`
+
+Site URL: `https://<user>.github.io/<repo>/`
+
 ## Deploy (Vercel)
 
 From the repo root (requires **JDK 17+** on the build machine):

@@ -235,7 +235,37 @@ enableGraalNative=false    # Set to true to build a GraalVM native image
 
 ## 📦 Deployment
 
-### Release via GitHub
+### Host in browser with GitHub Actions (GitHub Pages)
+
+The workflow [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml) builds the TeaVM WASM bundle and publishes it to **GitHub Pages** on every push to `main` or `master` (or when run manually).
+
+**One-time setup**
+
+1. Push this repository to GitHub.
+2. Open **Settings → Pages → Build and deployment**.
+3. Set **Source** to **GitHub Actions** (not “Deploy from a branch”).
+4. Push to `main` / `master`, or run the workflow from the **Actions** tab → **Deploy to GitHub Pages** → **Run workflow**.
+
+**Live URL**
+
+| Pages type | URL |
+|------------|-----|
+| Project site | `https://<username>.github.io/<repo>/` |
+| User/org site | `https://<username>.github.io/` (only if the repo is `<username>.github.io`) |
+
+The workflow runs `./scripts/setup-teavm.sh`, then `./gradlew :teavm:patchWebIndex`, and uploads `teavm/build/dist/webapp/`. First deploy can take several minutes (Gradle + TeaVM compile).
+
+**Manual deploy from your machine** (same output as CI):
+
+```bash
+./scripts/setup-teavm.sh    # or setup-teavm.ps1 on Windows
+./gradlew :teavm:patchWebIndex
+# Upload teavm/build/dist/webapp/ to any static host
+```
+
+**Vercel:** see [`vercel.json`](vercel.json) and [`teavm/README.md`](teavm/README.md).
+
+### Release via GitHub (desktop JAR)
 
 1. Build the cross-platform JAR:
    ```bash
