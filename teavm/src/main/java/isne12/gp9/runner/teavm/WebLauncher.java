@@ -18,7 +18,7 @@ public class WebLauncher {
         WebApplicationConfiguration config = new WebApplicationConfiguration("canvas");
         config.width = 0;
         config.height = 0;
-        config.showDownloadLogs = true;
+        config.showDownloadLogs = "true".equals(System.getProperty("girafferun.web.debug", "false"));
 
         new WebApplication(new Main(), config);
     }

@@ -29,7 +29,28 @@ Compiles the LibGDX `core` module to **WebAssembly** via [gdx-teavm](https://git
 ./gradlew :teavm:runWasm
 ```
 
-Requires **JDK 17+**. Deploy by uploading `teavm/build/dist/webapp/` to any static host.
+Requires **JDK 17+**. Production build: `./gradlew :teavm:patchWebIndex` (see [`teavm/README.md`](teavm/README.md)). Deploy by uploading `teavm/build/dist/webapp/` to any static host.
+
+---
+
+## Run on Desktop
+
+Native **LWJGL3** build using the same `core` module and `assets/` as the browser build.
+
+```bash
+# Pre-built JAR (repository root)
+java -jar GiraffeRun.jar
+
+# From source — Windows
+gradlew.bat lwjgl3:run
+
+# From source — macOS / Linux
+./gradlew lwjgl3:run
+```
+
+Requires **JDK 8+** to run the JAR (**JDK 17+** recommended for Gradle 8). **macOS:** `StartupHelper` applies `-XstartOnFirstThread` automatically.
+
+For fat JAR / native executable builds, see [How to Run Locally](#-how-to-run-locally) below.
 
 ---
 
@@ -158,6 +179,10 @@ git clone https://github.com/Wyco68/GiraffeRun.git
 cd GiraffeRun
 
 # 2. Run the game using the Gradle wrapper (no Gradle install required)
+# Windows:
+gradlew.bat lwjgl3:run
+
+# macOS / Linux:
 ./gradlew lwjgl3:run
 ```
 

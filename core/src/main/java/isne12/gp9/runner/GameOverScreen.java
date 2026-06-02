@@ -15,7 +15,7 @@ public class GameOverScreen implements Screen {
 
     public GameOverScreen(final Main game) {
         this.game = game;
-        backGround = game.assets.getTexture(Assets.GAME_OVER);
+        backGround = game.assets.getTextureOrLoad(Assets.GAME_OVER);
         layoutUi();
     }
 
@@ -47,7 +47,9 @@ public class GameOverScreen implements Screen {
 
         game.batch.begin();
         game.batch.setColor(Color.WHITE);
-        game.batch.draw(backGround, 0, 0, w, h);
+        if (backGround != null) {
+            game.batch.draw(backGround, 0, 0, w, h);
+        }
         UiBatch.drawDimFullscreen(game.batch, game.whitePixel, w, h);
 
         if (menuLayout != null) {
@@ -65,8 +67,7 @@ public class GameOverScreen implements Screen {
             if (game.settings.isAudioEnabled()) {
                 game.music.fadeTo(0.3f, 0.5f);
             }
-            game.setScreen(new GameScreen(game));
-            dispose();
+            game.setScreenAndDispose(new GameScreen(game));
         }
     }
 

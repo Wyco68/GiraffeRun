@@ -61,3 +61,23 @@ tasks.register('buildJs', JavaExec) {
     args 'build', 'js'
     systemProperty 'assets.path', assetsDir
 }
+
+/** Production index.html with relative paths, preload hints, and mobile viewport. */
+tasks.register('patchWebIndex') {
+    group = 'teavm'
+    description = 'Copy teavm/webapp/index.html into build/dist/webapp (run after buildWasm)'
+    dependsOn buildWasm
+    doLast {
+        def webapp = file('build/dist/webapp')
+        def index = new File(webapp, 'index.html')
+        if (!index.parentFile.exists()) {
+            throw new GradleException('Webapp output missing. Run :teavm:buildWasm first.')
+        }
+        copy {
+            from 'webapp/index.html'
+            into webapp
+        }
+    }
+}
+
+buildWasm.finalizedBy patchWebIndex

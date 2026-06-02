@@ -42,6 +42,7 @@ public class GameScreen implements Screen {
 
     boolean gameEnded;
     boolean paused;
+    private Screen pendingNextScreen;
 
     private final McButton resumeButton = new McButton();
     private final McButton retryButton = new McButton();
@@ -119,6 +120,16 @@ public class GameScreen implements Screen {
 
         input(delta);
         logic(delta);
+
+        if (pendingNextScreen != null) {
+            Screen next = pendingNextScreen;
+            pendingNextScreen = null;
+            game.setScreenAndDispose(next);
+            return;
+        }
+        if (gameEnded) {
+            return;
+        }
         if (backGround == null) {
             return;
         }
@@ -198,12 +209,10 @@ public class GameScreen implements Screen {
             resumeGame();
         } else if (retryButton.containsWorld(touchPos.x, touchPos.y, h)) {
             game.resetRun();
-            game.setScreen(new GameScreen(game));
-            dispose();
+            game.setScreenAndDispose(new GameScreen(game));
         } else if (menuButton.containsWorld(touchPos.x, touchPos.y, h)) {
             game.music.stop();
-            game.setScreen(new FirstScreen(game));
-            dispose();
+            game.setScreenAndDispose(new FirstScreen(game));
         }
     }
 
@@ -212,12 +221,10 @@ public class GameScreen implements Screen {
             resumeGame();
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
             game.resetRun();
-            game.setScreen(new GameScreen(game));
-            dispose();
+            game.setScreenAndDispose(new GameScreen(game));
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.Q)) {
             game.music.stop();
-            game.setScreen(new FirstScreen(game));
-            dispose();
+            game.setScreenAndDispose(new FirstScreen(game));
         }
     }
 
@@ -285,18 +292,18 @@ public class GameScreen implements Screen {
                 game.gameData.recordRun(game.getMaxLevel(), player.getCrystalCollected());
                 game.resetRun();
                 game.setState(GameState.GAME_WIN);
-                game.setScreen(new GameWinScreen(game));
+                pendingNextScreen = new GameWinScreen(game);
             } else {
                 game.gameData.recordRun(game.getLevel(), player.getCrystalCollected());
                 game.advanceLevel();
                 game.setState(GameState.LEVEL_TRANSITION);
-                game.setScreen(new LoadScreen(game));
+                pendingNextScreen = new LoadScreen(game);
             }
         } else {
             game.gameData.recordRun(game.getLevel(), player.getCrystalCollected());
             game.playSound(gameOverSound);
             game.setState(GameState.GAME_OVER);
-            game.setScreen(new GameOverScreen(game));
+            pendingNextScreen = new GameOverScreen(game);
         }
     }
 
@@ -415,12 +422,12 @@ public class GameScreen implements Screen {
 
     @Override
     public void hide() {
-        game.music.stop();
+        clearGameplayInput();
     }
 
     @Override
     public void dispose() {
-        hide();
+        clearGameplayInput();
         if (drops != null && dropPools != null) {
             for (Drop drop : drops) {
                 dropPools.free(drop);

@@ -55,7 +55,18 @@ public class Main extends Game {
         enterFullscreenIfSupported();
         syncViewportToDisplay();
 
-        setScreen(new LoadingScreen(this));
+        setScreenAndDispose(new LoadingScreen(this));
+    }
+
+    /**
+     * Replaces the active screen and disposes the previous one (LibGDX {@link #setScreen} does not).
+     */
+    public void setScreenAndDispose(Screen next) {
+        Screen previous = getScreen();
+        setScreen(next);
+        if (previous != null) {
+            previous.dispose();
+        }
     }
 
     /** Desktop: native fullscreen. Web: canvas uses full window (see {@code WebLauncher}). */
@@ -163,8 +174,10 @@ public class Main extends Game {
 
     @Override
     public void dispose() {
+        music.stop();
         Screen screen = getScreen();
         if (screen != null) {
+            screen.hide();
             screen.dispose();
         }
         if (assets != null) {
@@ -172,6 +185,7 @@ public class Main extends Game {
         }
         if (whitePixel != null) {
             whitePixel.dispose();
+            whitePixel = null;
         }
         if (uiIcons != null) {
             uiIcons.dispose();
@@ -179,6 +193,9 @@ public class Main extends Game {
         if (fonts != null) {
             fonts.dispose();
         }
-        batch.dispose();
+        if (batch != null) {
+            batch.dispose();
+            batch = null;
+        }
     }
 }

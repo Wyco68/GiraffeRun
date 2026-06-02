@@ -16,6 +16,7 @@ public final class TouchControlsOverlay extends InputAdapter {
   private static final float LABEL_ALPHA = 0.65f;
   private static final Color LABEL_COLOR = new Color(
     McStyle.TEXT.r, McStyle.TEXT.g, McStyle.TEXT.b, LABEL_ALPHA);
+  private static final Color TMP = new Color();
 
   private final Main game;
   private final Texture whitePixel;
@@ -126,11 +127,11 @@ public final class TouchControlsOverlay extends InputAdapter {
     drawShieldGlyph(batch, shieldBounds);
     if (onCooldown) {
       float ratio = player.getShieldCooldownRatio();
-      Color prev = batch.getColor().cpy();
+      TMP.set(batch.getColor());
       batch.setColor(0f, 0f, 0f, 0.35f);
       batch.draw(whitePixel, shieldBounds.x, shieldBounds.y,
         shieldBounds.width, shieldBounds.height * ratio);
-      batch.setColor(prev);
+      batch.setColor(TMP);
     }
   }
 
@@ -139,11 +140,11 @@ public final class TouchControlsOverlay extends InputAdapter {
     float cy = bounds.y + bounds.height * 0.48f;
     float sw = bounds.width * 0.36f;
     float sh = bounds.height * 0.42f;
-    Color prev = batch.getColor().cpy();
+    TMP.set(batch.getColor());
     batch.setColor(0.78f, 0.78f, 0.82f, LABEL_ALPHA);
     batch.draw(whitePixel, cx - sw / 2f, cy - sh * 0.35f, sw, sh * 0.7f);
     batch.draw(whitePixel, cx - sw * 0.35f, cy - sh * 0.55f, sw * 0.7f, sh * 0.35f);
-    batch.setColor(prev);
+    batch.setColor(TMP);
   }
 
   private void drawLabel(Batch batch, Rectangle bounds, String text, float scaleMult) {

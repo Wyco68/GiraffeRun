@@ -21,9 +21,18 @@ public class EffectManager implements Disposable {
 
     private final Texture pixel;
     private final Array<Particle> particles = new Array<>();
+    private final Array<Particle> pool = new Array<>();
 
     public EffectManager(Texture pixel) {
         this.pixel = pixel;
+    }
+
+    private Particle obtainParticle() {
+        return pool.size > 0 ? pool.pop() : new Particle();
+    }
+
+    private void freeParticle(Particle p) {
+        pool.add(p);
     }
 
     public void spawnCrystalCollect(float x, float y) {
@@ -56,7 +65,7 @@ public class EffectManager implements Disposable {
 
     private void spawn(float x, float y, float vx, float vy, float size, float life,
                        float r, float g, float b, float a) {
-        Particle p = new Particle();
+        Particle p = obtainParticle();
         p.x = x;
         p.y = y;
         p.vx = vx;
@@ -74,6 +83,7 @@ public class EffectManager implements Disposable {
             p.life -= delta;
             if (p.life <= 0f) {
                 particles.removeIndex(i);
+                freeParticle(p);
                 continue;
             }
             p.x += p.vx * delta;
@@ -94,5 +104,6 @@ public class EffectManager implements Disposable {
     @Override
     public void dispose() {
         particles.clear();
+        pool.clear();
     }
 }

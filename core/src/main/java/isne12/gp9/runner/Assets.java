@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.utils.Disposable;
 
 public class Assets implements Disposable {
+    private static final String TAG = "Assets";
     public static final String BG1 = "BG1.png";
     public static final String BG2 = "BG2.png";
     public static final String BG3 = "BG3.png";
@@ -49,8 +50,9 @@ public class Assets implements Disposable {
     public static final String GAME_OVER_SOUND = "gameOverSound.mp3";
     public static final String THEME_AUDIO = "themeAudio.mp3";
 
-    private static final String[] TEXTURES = {
-        BG1, BG2, BG3, BG4, MENU, LOAD, GAME_OVER, GAME_WIN,
+    /** Loaded during initial splash (menu + gameplay essentials). */
+    private static final String[] BOOT_TEXTURES = {
+        MENU, LOAD, BG1, BG2, BG3, BG4,
         BACK_VIEW, RUN_RIGHT, RUN_LEFT, SHIELD_RIGHT, SHIELD_LEFT,
         ROCKET, HEART, CRYSTAL, SHIELD_ICON, TELEPORT_ICON,
         UI_ICON_SETTINGS, UI_ICON_SETTINGS_PRESSED,
@@ -58,6 +60,11 @@ public class Assets implements Disposable {
         UI_ICON_PAUSE, UI_ICON_PAUSE_PRESSED,
         UI_ICON_BACK, UI_ICON_BACK_PRESSED,
         UI_ICON_RETRY, UI_ICON_RETRY_PRESSED
+    };
+
+    /** Large end-of-run screens; loaded after boot pack starts. */
+    private static final String[] DEFERRED_TEXTURES = {
+        GAME_OVER, GAME_WIN
     };
 
     private static final String[] SOUNDS = {
@@ -68,6 +75,15 @@ public class Assets implements Disposable {
     private final AssetManager assetManager = new AssetManager();
     private boolean menuSplashQueued;
     private boolean loadingQueued;
+    private boolean deferredQueued;
+    private int loadErrors;
+
+    public Assets() {
+        assetManager.setErrorListener((asset, throwable) -> {
+            loadErrors++;
+            WebLog.error(TAG, "Failed to load: " + asset, throwable);
+        });
+    }
 
     private TextureLoader.TextureParameter textureParams() {
         TextureLoader.TextureParameter textureParams = new TextureLoader.TextureParameter();
@@ -95,11 +111,7 @@ public class Assets implements Disposable {
         }
         loadingQueued = true;
         TextureLoader.TextureParameter textureParams = textureParams();
-        for (String path : TEXTURES) {
-            if (!assetManager.isLoaded(path, Texture.class)) {
-                assetManager.load(path, Texture.class, textureParams);
-            }
-        }
+        queueTextures(BOOT_TEXTURES, textureParams);
         for (String path : SOUNDS) {
             if (!assetManager.isLoaded(path, Sound.class)) {
                 assetManager.load(path, Sound.class, new SoundLoader.SoundParameter());
@@ -108,6 +120,27 @@ public class Assets implements Disposable {
         if (!assetManager.isLoaded(THEME_AUDIO, Music.class)) {
             assetManager.load(THEME_AUDIO, Music.class, new MusicLoader.MusicParameter());
         }
+    }
+
+    private void queueTextures(String[] paths, TextureLoader.TextureParameter textureParams) {
+        for (String path : paths) {
+            if (!assetManager.isLoaded(path, Texture.class)) {
+                assetManager.load(path, Texture.class, textureParams);
+            }
+        }
+    }
+
+    /** Queues large menu overlays (game over / win) after boot textures are underway. */
+    public void loadDeferredTextures() {
+        if (deferredQueued) {
+            return;
+        }
+        deferredQueued = true;
+        queueTextures(DEFERRED_TEXTURES, textureParams());
+    }
+
+    public boolean hasLoadErrors() {
+        return loadErrors > 0;
     }
 
     public boolean update() {
@@ -129,15 +162,36 @@ public class Assets implements Disposable {
     }
 
     public Texture getTexture(String path) {
+        if (!assetManager.isLoaded(path, Texture.class)) {
+            WebLog.error(TAG, "Texture not loaded: " + path);
+            return null;
+        }
         return assetManager.get(path, Texture.class);
     }
 
     public Sound getSound(String path) {
+        if (!assetManager.isLoaded(path, Sound.class)) {
+            WebLog.error(TAG, "Sound not loaded: " + path);
+            return null;
+        }
         return assetManager.get(path, Sound.class);
     }
 
     public Music getMusic(String path) {
+        if (!assetManager.isLoaded(path, Music.class)) {
+            WebLog.error(TAG, "Music not loaded: " + path);
+            return null;
+        }
         return assetManager.get(path, Music.class);
+    }
+
+    /** Ensures a texture is queued and blocks until loaded (for lazy end screens). */
+    public Texture getTextureOrLoad(String path) {
+        if (!assetManager.isLoaded(path, Texture.class)) {
+            assetManager.load(path, Texture.class, textureParams());
+            assetManager.finishLoadingAsset(path);
+        }
+        return getTexture(path);
     }
 
     public String getLevelBackgroundPath(int level) {

@@ -10,6 +10,7 @@ import isne12.gp9.runner.UiSpacing;
 
 /** Crystal progress bar with icon — animated fill. */
 public final class HudCrystalBarActor extends Actor {
+  private static final Color TMP = new Color();
   private final Texture crystalIcon;
   private final Texture whitePixel;
 
@@ -49,7 +50,7 @@ public final class HudCrystalBarActor extends Actor {
     float x = getX();
     float y = getY();
 
-    Color old = batch.getColor().cpy();
+    TMP.set(batch.getColor());
     batch.setColor(UiColors.BAR_BG.r, UiColors.BAR_BG.g, UiColors.BAR_BG.b,
       UiColors.BAR_BG.a * parentAlpha);
     batch.draw(whitePixel, x + icon + iconGap, y, barW, barH);
@@ -60,7 +61,7 @@ public final class HudCrystalBarActor extends Actor {
     if (fillW > 0.001f) {
       batch.draw(whitePixel, x + icon + iconGap, y, fillW, barH);
     }
-    batch.setColor(old);
+    batch.setColor(TMP);
 
     batch.draw(crystalIcon, x, y - toWorld(uiH, 1f), icon, icon);
   }

@@ -3,6 +3,7 @@ package isne12.gp9.runner;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.utils.ScreenUtils;
 
@@ -27,7 +28,8 @@ public class LoadScreen implements Screen {
     public void show() {
         game.setState(GameState.LEVEL_TRANSITION);
         if (game.settings.isAudioEnabled()) {
-            game.music.fadeTo(0.2f, 0.5f);
+            Music theme = game.assets.getMusic(Assets.THEME_AUDIO);
+            game.music.play(theme, 0.2f, true);
         }
         Gdx.input.setInputProcessor(null);
     }
@@ -59,8 +61,7 @@ public class LoadScreen implements Screen {
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)
             || Gdx.input.isKeyJustPressed(Input.Keys.ENTER)
             || continueButton.handleClick(game.viewport)) {
-            game.setScreen(new GameScreen(game));
-            dispose();
+            game.setScreenAndDispose(new GameScreen(game));
         }
     }
 

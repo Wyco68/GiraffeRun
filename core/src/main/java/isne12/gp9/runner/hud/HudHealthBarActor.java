@@ -11,6 +11,7 @@ import isne12.gp9.runner.UiSpacing;
 /** Five-segment health bar for adaptive HUD tables. */
 public final class HudHealthBarActor extends Actor {
   private static final int SEGMENTS = Player.MAX_HEALTH;
+  private static final Color TMP = new Color();
 
   private final Texture whitePixel;
   private int health = Player.MAX_HEALTH;
@@ -47,7 +48,7 @@ public final class HudHealthBarActor extends Actor {
     float x = getX();
     float y = getY();
 
-    Color old = batch.getColor().cpy();
+    TMP.set(batch.getColor());
     batch.setColor(UiColors.BAR_BG.r, UiColors.BAR_BG.g, UiColors.BAR_BG.b,
       UiColors.BAR_BG.a * parentAlpha);
     batch.draw(whitePixel, x - border, y - border, totalW + border * 2f, barH + border * 2f);
@@ -58,6 +59,6 @@ public final class HudHealthBarActor extends Actor {
       batch.setColor(seg.r, seg.g, seg.b, seg.a * parentAlpha);
       batch.draw(whitePixel, sx, y, segW, barH);
     }
-    batch.setColor(old);
+    batch.setColor(TMP);
   }
 }

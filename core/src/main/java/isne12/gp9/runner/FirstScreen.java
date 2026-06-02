@@ -80,8 +80,7 @@ public class FirstScreen implements Screen {
         if (game.settings.isAudioEnabled()) {
             game.music.fadeTo(0.3f, 0.5f);
         }
-        game.setScreen(new GameScreen(game));
-        dispose();
+        game.setScreenAndDispose(new GameScreen(game));
     }
 
     @Override

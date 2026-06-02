@@ -4,6 +4,19 @@ Browser build that compiles the **existing Java LibGDX game** (`core` module) to
 
 This reuses the same `Main`, screens, entities, and assets as the desktop JAR.
 
+## Run on desktop
+
+The LWJGL3 desktop build uses the same `core` code. From the repo root:
+
+```bash
+java -jar GiraffeRun.jar              # pre-built JAR
+
+gradlew.bat lwjgl3:run                # Windows — from source
+./gradlew lwjgl3:run                  # macOS / Linux — from source
+```
+
+See the root [`README.md`](../README.md) for JAR packaging, native executables (Construo), and controls.
+
 ## Prerequisites
 
 - **JDK 17+** (Gradle and TeaVM tooling)
@@ -59,11 +72,20 @@ A Gradle daemon or a previous TeaVM server may still have the JAR open. Stop dae
 ./gradlew :teavm:runJs
 ```
 
-## Deploy (static hosting)
+## Deploy (Vercel)
 
-Upload the contents of `teavm/build/dist/webapp/` to any static host (Vercel, Netlify, GitHub Pages).
+From the repo root (requires **JDK 17+** on the build machine):
 
-For Vercel, set **Root Directory** to `teavm/build/dist/webapp` after building, or add a CI step that runs `:teavm:buildWasm` first.
+```bash
+./gradlew :teavm:patchWebIndex
+```
+
+This runs `buildWasm` and copies the production `index.html` (relative `./` paths, WASM preload, mobile viewport).
+
+- **Vercel**: `vercel.json` at the repo root sets `outputDirectory` to `teavm/build/dist/webapp` and `buildCommand` to `gradlew.bat :teavm:patchWebIndex` (Windows builders) or `gradlew :teavm:patchWebIndex` on Linux/macOS.
+- **Pre-built deploy**: run the Gradle task locally, then `vercel deploy --prebuilt` with output `teavm/build/dist/webapp`.
+
+Debug logs in the browser: `-Dgirafferun.web.debug=true` when running `:teavm:runWasm`.
 
 ## Architecture
 

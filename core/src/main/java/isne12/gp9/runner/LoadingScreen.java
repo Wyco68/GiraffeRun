@@ -40,9 +40,15 @@ public class LoadingScreen implements Screen {
             game.assets.loadAll();
             loadStarted = true;
         }
+        if (loadStarted && game.assets.getProgress() >= 0.55f) {
+            game.assets.loadDeferredTextures();
+        }
         game.assets.update();
 
         if (!assetsReady && game.assets.isLoaded()) {
+            if (game.assets.hasLoadErrors()) {
+                WebLog.error("LoadingScreen", "Some assets failed to load; check console.");
+            }
             game.initUiAfterLoad();
             assetsReady = true;
             layoutUi();
@@ -85,8 +91,7 @@ public class LoadingScreen implements Screen {
                 || Gdx.input.isKeyJustPressed(Input.Keys.ENTER)
                 || continueButton.handleClick(game.viewport)) {
                 game.setState(GameState.MENU);
-                game.setScreen(new FirstScreen(game));
-                dispose();
+                game.setScreenAndDispose(new FirstScreen(game));
             }
         }
     }
